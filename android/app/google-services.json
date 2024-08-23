@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "186254572490",
+    "firebase_url": "https://flutterapp-edf04-default-rtdb.firebaseio.com",
+    "project_id": "flutterapp-edf04",
+    "storage_bucket": "flutterapp-edf04.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:186254572490:android:e769cb85495383c4f36d33",
+        "android_client_info": {
+          "package_name": "com.example.sites2app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD2YmHOJ62AFSpr2juyeMMR4ips9ekW83o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
