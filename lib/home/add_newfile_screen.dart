@@ -241,6 +241,14 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
     };
 
     _databaseReference.push().set(data).then((_) {
+      // Gửi thông báo đến người duyệt hồ sơ
+      _sendNotificationToAdmin(
+        title: _nameController.text,
+        nameCreated: widget.fullName,
+        datetime: formattedDate,
+        adminName: _selectedAdminName!,
+      );
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Hồ sơ đã được lưu')),
       );
@@ -259,6 +267,25 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Lỗi: $error')),
       );
+    });
+  }
+
+  void _sendNotificationToAdmin({
+    required String title,
+    required String nameCreated,
+    required String datetime,
+    required String adminName,
+  }) {
+    final DatabaseReference notificationsRef = FirebaseDatabase.instance.ref().child('notifications');
+
+    final Map<String, dynamic> notificationData = {
+      'message': 'Có hồ sơ $title mới được tạo bởi $nameCreated vào ngày $datetime',
+      'adminId': _selectedAdminName,
+      'isRead': false, // Đánh dấu thông báo chưa đọc
+    };
+
+    notificationsRef.push().set(notificationData).catchError((error) {
+      print('Lỗi gửi thông báo: $error');
     });
   }
 }

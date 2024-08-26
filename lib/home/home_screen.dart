@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:intl/intl.dart'; // Package này giúp định dạng ngày giờ
+import 'package:sites2app/home/notification_screen.dart';
 import '../function/detail_screen.dart';
 import 'add_newfile_screen.dart';
 
@@ -122,7 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           _buildHomeScreen(),
           AddNewFileScreen(fullName: widget.fullName),
-          const Center(child: Text('Thông báo')),
+          const NotificationScreen(),
           const Center(child: Text('Tài khoản')),
         ],
       ),
@@ -164,6 +165,8 @@ class _HomeScreenState extends State<HomeScreen> {
       itemCount: _files.length,
       itemBuilder: (context, index) {
         final file = _files[index];
+        final originalFiles = (file['original files'] as Map<dynamic, dynamic>?)?.cast<String, String?>() ?? {};
+
         return ListTile(
           title: Text(file['title'] ?? 'Tên không xác định'),
           subtitle: Text(file['description'] ?? 'Mô tả không xác định'),
@@ -174,6 +177,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 builder: (context) => ProductDetailScreen(
                   name: file['title'] ?? 'Không có tên',
                   description: file['description'] ?? 'Không có mô tả',
+                  status: file['status'] ?? 'Chưa xác định',
+                  datetime: file['timestamp'] ?? 'Chưa xác định',
+                  originalFiles: originalFiles,  // Change here
+                  nameCreated: file['namecreated'] ?? 'Không có thông tin',
+                  author: widget.author,  // Pass the author parameter here
                 ),
               ),
             );
@@ -182,6 +190,7 @@ class _HomeScreenState extends State<HomeScreen> {
       },
     );
   }
+
 
   void _logout(BuildContext context) {
     Navigator.pushReplacementNamed(context, '/login');
