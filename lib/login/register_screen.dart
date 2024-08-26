@@ -54,7 +54,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     // Chuyển đổi thời gian hiện tại thành định dạng DD/MM/YYYY
-    String formattedDate = DateFormat('dd/MM/yyyy').format(DateTime.now());
+    String formattedDate = DateFormat('HH:mm dd/MM/yyyy').format(DateTime.now());
 
     // Lưu thông tin người dùng vào Firestore
     await FirebaseFirestore.instance.collection('users').add({

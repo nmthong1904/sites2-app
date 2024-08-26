@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:intl/intl.dart'; // Package này giúp định dạng ngày giờ
 import '../function/detail_screen.dart';
 import 'add_newfile_screen.dart';
 
@@ -15,42 +16,106 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
-  late Stream<DatabaseEvent> _filesStream; // Đổi kiểu của _filesStream
+  List<Map<dynamic, dynamic>> _files = [];
   final DatabaseReference _databaseReference = FirebaseDatabase.instance.ref().child('files');
+  String _sortBy = 'title'; // Biến để theo dõi kiểu sắp xếp hiện tại
 
   @override
   void initState() {
     super.initState();
-    _filesStream = _databaseReference.onValue;
+    _loadFiles();
+  }
+
+  Future<void> _loadFiles() async {
+    _databaseReference.onValue.listen((event) {
+      final data = event.snapshot.value as Map<dynamic, dynamic>?;
+
+      if (data != null) {
+        List<Map<dynamic, dynamic>> files = data.values.toList().cast<Map<dynamic, dynamic>>();
+
+        setState(() {
+          _files = files;
+          _sortFiles();
+        });
+      }
+    });
+  }
+
+  void _sortFiles() {
+    if (_sortBy == 'title') {
+      _files.sort((a, b) {
+        String titleA = a['title'] ?? '';
+        String titleB = b['title'] ?? '';
+        return titleA.toLowerCase().compareTo(titleB.toLowerCase());
+      });
+    } else if (_sortBy == 'timestamp') {
+      _files.sort((a, b) {
+        DateTime datetimeA = DateFormat('HH:mm dd/MM/yyyy').parse(a['timestamp']);
+        DateTime datetimeB = DateFormat('HH:mm dd/MM/yyyy').parse(b['timestamp']);
+        return datetimeB.compareTo(datetimeA); // Sắp xếp từ mới nhất đến cũ nhất
+      });
+    }
+  }
+
+  void _changeSort(String sortBy) {
+    setState(() {
+      _sortBy = sortBy;
+      _sortFiles();
+    });
+  }
+
+  // Hàm để chuyển đổi giá trị author thành tên mô tả
+  String _getAuthorDescription(String author) {
+    switch (author) {
+      case 'admin':
+        return 'Ban Giám Đốc';
+      case 'manager':
+        return 'Nhân Viên Soát Xét Hồ Sơ';
+      case 'stamper':
+        return 'Nhân Viên Đóng Dấu';
+      case 'user':
+        return 'Kiểm Định Viên';
+      default:
+        return 'Chưa Xác Định';
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        flexibleSpace: Center(
-          child: Padding(
-            padding: const EdgeInsets.only(top: 20.0), // Tạo khoảng cách 10dp từ trên xuống
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            PopupMenuButton<String>(
+              onSelected: _changeSort,
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'title',
+                  child: Text('Sắp xếp theo tiêu đề'),
+                ),
+                const PopupMenuItem(
+                  value: 'timestamp',
+                  child: Text('Sắp xếp theo ngày giờ'),
+                ),
+              ],
+              icon: const Icon(Icons.sort),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(widget.fullName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                Text(widget.author, style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic)),
+                Text(_getAuthorDescription(widget.author), style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic)),
               ],
             ),
-          ),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 10),
-            child: IconButton(
+            IconButton(
               icon: const Icon(Icons.logout),
               onPressed: () {
                 _logout(context);
               },
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       body: IndexedStack(
         index: _currentIndex,
@@ -95,42 +160,22 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHomeScreen() {
-    return StreamBuilder<DatabaseEvent>( // Đổi kiểu của StreamBuilder
-      stream: _filesStream,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (snapshot.hasError) {
-          return Center(child: Text('Lỗi: ${snapshot.error}'));
-        }
-
-        if (!snapshot.hasData || snapshot.data == null || snapshot.data!.snapshot.value == null) {
-          return const Center(child: Text('Không có dữ liệu'));
-        }
-
-        final data = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
-        final List<Map<dynamic, dynamic>> files = data.values.toList().cast<Map<dynamic, dynamic>>();
-
-        return ListView.builder(
-          itemCount: files.length,
-          itemBuilder: (context, index) {
-            final file = files[index];
-            return ListTile(
-              title: Text(file['name'] ?? 'Không có tên'),
-              subtitle: Text(file['description'] ?? 'Không có mô tả'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ProductDetailScreen(
-                      name: file['name'] ?? 'Không có tên',
-                      description: file['description'] ?? 'Không có mô tả',
-                    ),
-                  ),
-                );
-              },
+    return ListView.builder(
+      itemCount: _files.length,
+      itemBuilder: (context, index) {
+        final file = _files[index];
+        return ListTile(
+          title: Text(file['title'] ?? 'Tên không xác định'),
+          subtitle: Text(file['description'] ?? 'Mô tả không xác định'),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ProductDetailScreen(
+                  name: file['title'] ?? 'Không có tên',
+                  description: file['description'] ?? 'Không có mô tả',
+                ),
+              ),
             );
           },
         );
@@ -139,6 +184,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _logout(BuildContext context) {
-    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+    Navigator.pushReplacementNamed(context, '/login');
   }
 }

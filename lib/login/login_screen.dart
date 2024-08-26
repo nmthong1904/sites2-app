@@ -41,24 +41,8 @@ class _LoginScreenState extends State<LoginScreen> {
       if (result.docs.isNotEmpty) {
         // Lấy họ tên và author từ Firestore
         var userData = result.docs.first.data() as Map<String, dynamic>;
-        String fullName = userData['fullName'] ?? 'N/A'; // Thay thế bằng trường đúng
-        String author = userData['author'] ?? 'user'; // Mặc định là "user"
-
-        // Chuyển đổi giá trị của author thành chuỗi tương ứng
-        String authorRole;
-        switch (author) {
-          case 'admin':
-            authorRole = 'Ban giám đốc';
-            break;
-          case 'stamper':
-            authorRole = 'Người đóng dấu';
-            break;
-          case 'manager':
-            authorRole = 'Người đánh giá hồ sơ';
-            break;
-          default:
-            authorRole = 'Kiểm định viên';
-        }
+        String fullName = userData['fullName'] ?? 'N/A';
+        String author = userData['author'] ?? 'user'; // Sử dụng giá trị gốc 'author'
 
         // Đăng nhập thành công
         Fluttertoast.showToast(
@@ -73,7 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => HomeScreen(fullName: fullName, author: authorRole),
+            builder: (context) => HomeScreen(fullName: fullName, author: author),
           ),
         );
       } else {

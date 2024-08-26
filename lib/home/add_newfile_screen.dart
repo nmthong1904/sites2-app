@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart'; // Thêm thư viện intl để định dạng ngày tháng
 
 class AddNewFileScreen extends StatefulWidget {
   final String fullName;
@@ -29,12 +31,17 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-
   final DatabaseReference _databaseReference = FirebaseDatabase.instance.ref().child('files');
+
+  String? _selectedAdmin;
+  String _selectedAdminName = '';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Thêm hồ sơ mới'),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -50,8 +57,17 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
               controller: _descriptionController,
               decoration: const InputDecoration(labelText: 'Mô tả'),
             ),
+            const SizedBox(height: 16),
+            TextButton(
+              onPressed: () => _selectAdmin(context),
+              child: Text(
+                _selectedAdminName.isEmpty
+                    ? 'Chọn người duyệt'
+                    : 'Người duyệt: $_selectedAdminName',
+                style: const TextStyle(color: Colors.blue),
+              ),
+            ),
             const SizedBox(height: 15),
-            // Checkboxes and corresponding TextFields
             ...List.generate(10, (index) {
               return Row(
                 children: [
@@ -90,11 +106,130 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
     );
   }
 
+  Future<void> _selectAdmin(BuildContext context) async {
+    final QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('author', isEqualTo: 'admin')
+        .get();
+
+    final List<QueryDocumentSnapshot> adminUsers = querySnapshot.docs;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        String? selectedAdminId = _selectedAdmin;
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setStateDialog) {
+            return AlertDialog(
+              title: const Text('Chọn người duyệt'),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: adminUsers.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    final admin = adminUsers[index];
+                    final adminId = admin.id;
+                    final adminName = admin['fullName'];
+
+                    return ListTile(
+                      title: Text(adminName),
+                      leading: Radio<String>(
+                        value: adminId,
+                        groupValue: selectedAdminId,
+                        onChanged: (String? value) {
+                          // Cập nhật trạng thái và đóng dialog khi nhấn vào RadioButton
+                          setStateDialog(() {
+                            selectedAdminId = value;
+                          });
+                          setState(() {
+                            _selectedAdmin = selectedAdminId;
+                            _selectedAdminName = adminName;
+                          });
+                          Navigator.of(context).pop();
+                        },
+                        activeColor: Colors.blue, // Đổi màu của radio button khi được chọn
+                      ),
+                      onTap: () {
+                        // Cập nhật trạng thái và đóng dialog khi nhấn vào ListTile
+                        setStateDialog(() {
+                          selectedAdminId = adminId;
+                        });
+                        setState(() {
+                          _selectedAdmin = adminId;
+                          _selectedAdminName = adminName;
+                        });
+                        Navigator.of(context).pop();
+                      },
+                    );
+                  },
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Hủy'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   void _saveData() {
+    if (_nameController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng nhập tiêu đề')),
+      );
+      return;
+    }
+
+    if (_descriptionController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng nhập mô tả')),
+      );
+      return;
+    }
+
+    if (_selectedAdmin == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng chọn người duyệt hồ sơ')),
+      );
+      return;
+    }
+
+    bool isAnyCheckboxChecked = false;
+    for (int i = 0; i < _isCheckboxChecked.length; i++) {
+      if (_isCheckboxChecked[i] && _textControllers[i].text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Vui lòng nhập số lượng cho "${_checkboxLabels[i]}"')),
+        );
+        return;
+      }
+      if (_isCheckboxChecked[i]) {
+        isAnyCheckboxChecked = true;
+      }
+    }
+
+    if (!isAnyCheckboxChecked) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng chọn loại biên bản')),
+      );
+      return;
+    }
+
+    String formattedDate = DateFormat('HH:mm dd/MM/yyyy').format(DateTime.now());
+
     final Map<String, dynamic> data = {
       'namecreated': widget.fullName,
-      'name': _nameController.text,
+      'title': _nameController.text,
       'description': _descriptionController.text,
+      'status': 'pending',
+      'timestamp': formattedDate, // Lưu thời gian dưới dạng chuỗi
       'original files': _checkboxLabels.asMap().map((index, label) {
         if (_isCheckboxChecked[index] && _textControllers[index].text.isNotEmpty) {
           return MapEntry(label, _textControllers[index].text);
@@ -102,14 +237,8 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
           return MapEntry(label, null);
         }
       })..removeWhere((key, value) => value == null),
+      'nameassign': _selectedAdminName,
     };
-
-    if (data['original files']!.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng chọn biên bản trình ký và nhập số lượng biên bản')),
-      );
-      return;
-    }
 
     _databaseReference.push().set(data).then((_) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -117,14 +246,13 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
       );
       _nameController.clear();
       _descriptionController.clear();
-      // Reset các checkbox và text fields
       setState(() {
-        // Cập nhật nội dung của danh sách mà không thay đổi bản thân biến
         for (int i = 0; i < _isCheckboxChecked.length; i++) {
           _isCheckboxChecked[i] = false;
         }
-        // Xóa nội dung của tất cả các TextEditingController
         _textControllers.forEach((controller) => controller.clear());
+        _selectedAdmin = null;
+        _selectedAdminName = '';
       });
       FocusScope.of(context).requestFocus(FocusNode());
     }).catchError((error) {
