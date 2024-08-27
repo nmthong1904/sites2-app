@@ -14,6 +14,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _obscurePassword = true; // Biến trạng thái để kiểm soát hiển thị mật khẩu
 
   Future<void> _login() async {
     String username = _usernameController.text;
@@ -99,8 +100,20 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             TextField(
               controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Mật khẩu'),
-              obscureText: true,
+              decoration: InputDecoration(
+                labelText: 'Mật khẩu',
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword; // Đổi trạng thái khi nhấn vào icon
+                    });
+                  },
+                ),
+              ),
+              obscureText: _obscurePassword, // Hiển thị hoặc ẩn mật khẩu dựa trên trạng thái
             ),
             const SizedBox(height: 20),
             ElevatedButton(

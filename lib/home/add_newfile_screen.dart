@@ -38,69 +38,75 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Thêm hồ sơ mới'),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // TextFields for "Tên hồ sơ" and "Mô tả"
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Tên hồ sơ'),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _descriptionController,
-              decoration: const InputDecoration(labelText: 'Mô tả'),
-            ),
-            const SizedBox(height: 16),
-            TextButton(
-              onPressed: () => _selectAdmin(context),
-              child: Text(
-                _selectedAdminName.isEmpty
-                    ? 'Chọn người duyệt'
-                    : 'Người duyệt: $_selectedAdminName',
-                style: const TextStyle(color: Colors.blue),
+    return GestureDetector(
+      onTap: () {
+        // Ẩn bàn phím khi người dùng nhấp ra ngoài các trường nhập liệu
+        FocusScope.of(context).unfocus();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Thêm hồ sơ mới'),
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // TextFields for "Tên hồ sơ" and "Mô tả"
+              TextField(
+                controller: _nameController,
+                decoration: const InputDecoration(labelText: 'Tên hồ sơ'),
               ),
-            ),
-            const SizedBox(height: 15),
-            ...List.generate(10, (index) {
-              return Row(
-                children: [
-                  Checkbox(
-                    value: _isCheckboxChecked[index],
-                    onChanged: (bool? value) {
-                      setState(() {
-                        _isCheckboxChecked[index] = value ?? false;
-                      });
-                    },
-                  ),
-                  Expanded(
-                    child: Text(_checkboxLabels[index]),
-                  ),
-                  if (_isCheckboxChecked[index])
-                    Expanded(
-                      child: TextField(
-                        controller: _textControllers[index],
-                        decoration: const InputDecoration(
-                          labelText: 'Số lượng biên bản',
-                        ),
-                        keyboardType: TextInputType.number,
-                      ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _descriptionController,
+                decoration: const InputDecoration(labelText: 'Mô tả'),
+              ),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () => _selectAdmin(context),
+                child: Text(
+                  _selectedAdminName.isEmpty
+                      ? 'Chọn người duyệt'
+                      : 'Người duyệt: $_selectedAdminName',
+                  style: const TextStyle(color: Colors.blue),
+                ),
+              ),
+              const SizedBox(height: 15),
+              ...List.generate(10, (index) {
+                return Row(
+                  children: [
+                    Checkbox(
+                      value: _isCheckboxChecked[index],
+                      onChanged: (bool? value) {
+                        setState(() {
+                          _isCheckboxChecked[index] = value ?? false;
+                        });
+                      },
                     ),
-                ],
-              );
-            }),
-            const SizedBox(height: 15),
-            ElevatedButton(
-              onPressed: _saveData,
-              child: const Text('Lưu hồ sơ'),
-            ),
-          ],
+                    Expanded(
+                      child: Text(_checkboxLabels[index]),
+                    ),
+                    if (_isCheckboxChecked[index])
+                      Expanded(
+                        child: TextField(
+                          controller: _textControllers[index],
+                          decoration: const InputDecoration(
+                            labelText: 'Số lượng biên bản',
+                          ),
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                  ],
+                );
+              }),
+              const SizedBox(height: 15),
+              ElevatedButton(
+                onPressed: _saveData,
+                child: const Text('Lưu hồ sơ'),
+              ),
+            ],
+          ),
         ),
       ),
     );

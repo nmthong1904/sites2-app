@@ -93,11 +93,11 @@ class _HomeScreenState extends State<HomeScreen> {
               itemBuilder: (context) => [
                 const PopupMenuItem(
                   value: 'title',
-                  child: Text('Sắp xếp theo tiêu đề'),
+                  child: Text('Tiêu đề: A->Z'),
                 ),
                 const PopupMenuItem(
                   value: 'timestamp',
-                  child: Text('Sắp xếp theo ngày giờ'),
+                  child: Text('Mới nhất'),
                 ),
               ],
               icon: const Icon(Icons.sort),
@@ -168,8 +168,20 @@ class _HomeScreenState extends State<HomeScreen> {
         final originalFiles = (file['original files'] as Map<dynamic, dynamic>?)?.cast<String, String?>() ?? {};
 
         return ListTile(
-          title: Text(file['title'] ?? 'Tên không xác định'),
-          subtitle: Text(file['description'] ?? 'Mô tả không xác định'),
+          title: Text('Tiêu đề: ' + file['title'] ?? 'Tên không xác định'),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Trạng thái: '+_getStatusText(file['status'])),
+              Text('Ngày tạo: ' +file['timestamp'] ?? 'Chưa xác định'),
+              Text('Người trình ký: ' +file['namecreated'] ?? 'Không có thông tin'),
+            ],
+          ),
+          trailing: Icon(
+            Icons.circle,
+            color: _getStatusColor(file['status']),
+            size: 14.0, // Adjust the size of the dot
+          ),
           onTap: () {
             Navigator.push(
               context,
@@ -179,18 +191,47 @@ class _HomeScreenState extends State<HomeScreen> {
                   description: file['description'] ?? 'Không có mô tả',
                   status: file['status'] ?? 'Chưa xác định',
                   datetime: file['timestamp'] ?? 'Chưa xác định',
-                  originalFiles: originalFiles,  // Change here
+                  originalFiles: originalFiles,
                   nameCreated: file['namecreated'] ?? 'Không có thông tin',
-                  author: widget.author,  // Pass the author parameter here
+                  author: widget.author,
                 ),
               ),
             );
           },
         );
+
       },
     );
   }
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'approved':
+      case 'deployed':
+      case 'pending':
+        return Colors.yellow;
+      case 'finished':
+        return Colors.green;
+      case 'denied':
+        return Colors.red;
+      default:
+        return Colors.grey; // Default color if the status is not recognized
+    }
+  }
 
+  String _getStatusText(String status) {
+    switch (status) {
+      case 'pending':
+        return 'Đang chờ phê duyệt';
+      case 'approved':
+        return 'Đang chờ soát xét';
+      case 'deployed':
+        return 'Đang chờ đóng dấu';
+      case 'finished':
+        return 'Hồ sơ đã hoàn thiện';
+      default:
+        return 'Trạng thái không xác định';
+    }
+  }
 
   void _logout(BuildContext context) {
     Navigator.pushReplacementNamed(context, '/login');
