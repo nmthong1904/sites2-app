@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'approved_screen.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final String name;
@@ -10,6 +11,11 @@ class ProductDetailScreen extends StatefulWidget {
   final Map<String, String?> originalFiles;
   final String nameCreated;
   final String author;
+  final String fileId;
+  final Map<String, String?> approvedFiles; // Thêm approvedFiles
+  final String? approvedtime; // Thêm approvedtime
+  final String? assignName; // Thêm approvedtime
+  final String? approvedName; // Thêm approvedName
 
   const ProductDetailScreen({
     required this.name,
@@ -19,6 +25,11 @@ class ProductDetailScreen extends StatefulWidget {
     required this.originalFiles,
     required this.nameCreated,
     required this.author,
+    required this.fileId,
+    required this.approvedFiles, // Thêm approvedFiles
+    required this.approvedtime, // Thêm approvedtime
+    required this.assignName, // Thêm approvedName
+    required this.approvedName, // Thêm approvedName
     Key? key,
   }) : super(key: key);
 
@@ -27,8 +38,6 @@ class ProductDetailScreen extends StatefulWidget {
 }
 
 class _ProductDetailScreenState extends State<ProductDetailScreen> {
-  String? _selectedManager;
-  String _selectedManagerName = '';
 
   String _getStatusText(String status) {
     switch (status) {
@@ -94,11 +103,36 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
               style: const TextStyle(height: 1.5),
             ),
+            Text.rich(
+                TextSpan(
+                children:[
+                  if (widget.approvedtime != null)
+                    TextSpan(
+                      text: 'Thời gian phê duyệt: ${widget.approvedtime}\n',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  if (widget.approvedName != null)
+                    TextSpan(
+                      text: 'Người phê duyệt: ${widget.assignName}\n',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                ],
+              ),
+            ),
             Text('Biên bản gốc bao gồm', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ...widget.originalFiles.entries.map((entry) {
               return Text('${entry.value ?? 'Không có dữ liệu'} ${entry.key}', style: const TextStyle(fontSize: 16));
             }).toList(),
             const SizedBox(height: 10),
+            // Hiển thị các dữ liệu mới nếu có
+            if (widget.approvedFiles.isNotEmpty) ...[
+              Text('Biên bản đã phê duyệt:', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              ...widget.approvedFiles.entries.map((entry) {
+                return Text('${entry.value ?? 'Không có dữ liệu'} ${entry.key}', style: const TextStyle(fontSize: 16));
+              }).toList(),
+            ],
+            const SizedBox(height: 10),
+            // Hiển thị các nút hành động tùy theo vai trò của author
             if (widget.author == 'admin') ...[
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -161,7 +195,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
             ],
           ),
-          child: ApproveScreen(originalFiles: widget.originalFiles),
+          child: ApproveScreen(originalFiles: widget.originalFiles,fileId: widget.fileId),
         );
       },
     );

@@ -242,7 +242,7 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
           return MapEntry(label, null);
         }
       })..removeWhere((key, value) => value == null),
-      'nameassign': _selectedAdminName,
+      'assignName': _selectedAdminName,
     };
 
     // Tạo một DatabaseReference mới cho hồ sơ

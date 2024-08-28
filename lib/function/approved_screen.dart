@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart'; // Thêm thư viện intl để định dạng ngày tháng
+import 'package:firebase_database/firebase_database.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+
 
 class ApproveScreen extends StatefulWidget {
   final Map<String, String?> originalFiles;
+  final String fileId; // Thêm biến fileId
 
   const ApproveScreen({
     required this.originalFiles,
+    required this.fileId, // Thêm biến fileId
     Key? key,
   }) : super(key: key);
 
@@ -15,6 +21,7 @@ class ApproveScreen extends StatefulWidget {
 
 class _ApproveScreenState extends State<ApproveScreen> {
   String? _selectedManager;
+  String _selectedManagerName = '';
   final Map<String, TextEditingController> _controllers = {}; // Quản lý TextEditingController
   final Map<String, int?> quantities = {}; // Lưu trữ số lượng nhập từ người dùng
   final Map<String, String?> errorMessages = {}; // Lưu trữ thông báo lỗi riêng cho từng ô
@@ -123,6 +130,7 @@ class _ApproveScreenState extends State<ApproveScreen> {
                       groupValue: _selectedManager,
                       onChanged: (value) {
                         setState(() {
+                          _selectedManagerName = managerName;
                           _selectedManager = value;
                           managerErrorMessage = null; // Xóa thông báo lỗi khi người dùng chọn người soát xét
                         });
@@ -142,7 +150,7 @@ class _ApproveScreenState extends State<ApproveScreen> {
             const SizedBox(height: 10),
             Center(
               child: ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   // Kiểm tra lỗi số lượng trước khi duyệt
                   if (errorMessages.isNotEmpty) {
                     setState(() {}); // Cập nhật trạng thái để hiển thị thông báo lỗi
@@ -157,9 +165,33 @@ class _ApproveScreenState extends State<ApproveScreen> {
                     return;
                   }
 
-                  // Thực hiện logic phê duyệt
+                  // Lấy thời gian hiện tại
+                  final approvedTime = DateFormat('HH:mm dd/MM/yyyy').format(DateTime.now());
+
+                  // Tạo map để lưu các file đã được duyệt
+                  final approvedFiles = Map<String, String?>.from(widget.originalFiles);
+                  quantities.forEach((key, value) {
+                    approvedFiles[key] = value.toString(); // Cập nhật số lượng đã duyệt
+                  });
+
+                  // // Cập nhật vào Firebase Realtime Database
+                  await FirebaseDatabase.instance.ref().child('files').child(widget.fileId).update({
+                    'approvedtime': approvedTime,
+                    'approvedFiles': approvedFiles,
+                    'status': 'approved',
+                    'approvedName':_selectedManagerName,
+                  });
+
+                  // Điều hướng trở về màn hình trước
                   Navigator.of(context).pop();
-                },
+                  // Fluttertoast.showToast(
+                  //   msg: "AAAAAA! ${widget.fileId}",
+                  //   toastLength: Toast.LENGTH_SHORT,
+                  //   gravity: ToastGravity.BOTTOM,
+                  //   backgroundColor: Colors.black,
+                  //   textColor: Colors.white,
+                  // );
+              },
                 child: const Text('Duyệt Hồ Sơ'),
               ),
             ),

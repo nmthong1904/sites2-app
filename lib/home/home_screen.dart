@@ -32,13 +32,18 @@ class _HomeScreenState extends State<HomeScreen> {
       final data = event.snapshot.value as Map<dynamic, dynamic>?;
 
       if (data != null) {
-        List<Map<dynamic, dynamic>> files = data.values.toList().cast<Map<dynamic, dynamic>>();
+        List<Map<dynamic, dynamic>> files = data.entries.map((entry) {
+          return {
+            'id': entry.key, // Lưu trữ fileId
+            ...entry.value as Map<dynamic, dynamic>,
+          };
+        }).toList();
 
         // Apply filter based on author
         if (widget.author == 'user') {
           files = files.where((file) => file['namecreated'] == widget.fullName).toList();
         } else if (widget.author == 'admin') {
-          files = files.where((file) => file['nameassign'] == widget.fullName).toList();
+          files = files.where((file) => file['assignName'] == widget.fullName).toList();
         } else if (widget.author == 'manager') {
           files = files.where((file) => file['namemanager'] == widget.fullName).toList();
         } else if (widget.author == 'stamper') {
@@ -177,15 +182,16 @@ class _HomeScreenState extends State<HomeScreen> {
       itemBuilder: (context, index) {
         final file = _files[index];
         final originalFiles = (file['original files'] as Map<dynamic, dynamic>?)?.cast<String, String?>() ?? {};
+        final approvedFiles = (file['approvedFiles'] as Map<dynamic, dynamic>?)?.cast<String, String?>() ?? {};
 
         return ListTile(
           title: Text('Tiêu đề: ' + file['title'] ?? 'Tên không xác định'),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Trạng thái: '+_getStatusText(file['status'])),
-              Text('Ngày tạo: ' +file['createdtime'] ?? 'Chưa xác định'),
-              Text('Người trình ký: ' +file['namecreated'] ?? 'Không có thông tin'),
+              Text('Trạng thái: ' + _getStatusText(file['status'])),
+              Text('Ngày tạo: ' + file['createdtime'] ?? 'Chưa xác định'),
+              Text('Người trình ký: ' + file['namecreated'] ?? 'Không có thông tin'),
             ],
           ),
           trailing: Icon(
@@ -205,12 +211,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   originalFiles: originalFiles,
                   nameCreated: file['namecreated'] ?? 'Không có thông tin',
                   author: widget.author,
+                  fileId: file['id'], // Truyền fileId vào đây
+                  approvedFiles: approvedFiles, // Truyền approvedFiles
+                  approvedtime: file['approvedtime'], // Truyền approvedtime
+                  approvedName: file['approvedName'], // Truyền approvedName
+                  assignName: file['assignName'], // Truyền approvedName
                 ),
               ),
             );
           },
         );
-
       },
     );
   }
