@@ -34,6 +34,17 @@ class _HomeScreenState extends State<HomeScreen> {
       if (data != null) {
         List<Map<dynamic, dynamic>> files = data.values.toList().cast<Map<dynamic, dynamic>>();
 
+        // Apply filter based on author
+        if (widget.author == 'user') {
+          files = files.where((file) => file['namecreated'] == widget.fullName).toList();
+        } else if (widget.author == 'admin') {
+          files = files.where((file) => file['nameassign'] == widget.fullName).toList();
+        } else if (widget.author == 'manager') {
+          files = files.where((file) => file['namemanager'] == widget.fullName).toList();
+        } else if (widget.author == 'stamper') {
+          files = files.where((file) => file['namestamper'] == widget.fullName).toList();
+        }
+
         setState(() {
           _files = files;
           _sortFiles();
@@ -96,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Text('Tiêu đề: A->Z'),
                 ),
                 const PopupMenuItem(
-                  value: 'timestamp',
+                  value: 'createdtime',
                   child: Text('Mới nhất'),
                 ),
               ],
@@ -123,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           _buildHomeScreen(),
           AddNewFileScreen(fullName: widget.fullName),
-          const NotificationScreen(),
+          NotificationScreen(fullName: widget.fullName,author: widget.author),
           const Center(child: Text('Tài khoản')),
         ],
       ),
@@ -173,7 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Trạng thái: '+_getStatusText(file['status'])),
-              Text('Ngày tạo: ' +file['timestamp'] ?? 'Chưa xác định'),
+              Text('Ngày tạo: ' +file['createdtime'] ?? 'Chưa xác định'),
               Text('Người trình ký: ' +file['namecreated'] ?? 'Không có thông tin'),
             ],
           ),
@@ -190,7 +201,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   name: file['title'] ?? 'Không có tên',
                   description: file['description'] ?? 'Không có mô tả',
                   status: file['status'] ?? 'Chưa xác định',
-                  datetime: file['timestamp'] ?? 'Chưa xác định',
+                  datetime: file['createdtime'] ?? 'Chưa xác định',
                   originalFiles: originalFiles,
                   nameCreated: file['namecreated'] ?? 'Không có thông tin',
                   author: widget.author,

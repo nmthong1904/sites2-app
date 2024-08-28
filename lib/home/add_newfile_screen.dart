@@ -135,13 +135,12 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
                   itemCount: adminUsers.length,
                   itemBuilder: (BuildContext context, int index) {
                     final admin = adminUsers[index];
-                    final adminId = admin.id;
                     final adminName = admin['fullName'];
 
                     return ListTile(
                       title: Text(adminName),
                       leading: Radio<String>(
-                        value: adminId,
+                        value: adminName,
                         groupValue: selectedAdminId,
                         onChanged: (String? value) {
                           // Cập nhật trạng thái và đóng dialog khi nhấn vào RadioButton
@@ -159,10 +158,10 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
                       onTap: () {
                         // Cập nhật trạng thái và đóng dialog khi nhấn vào ListTile
                         setStateDialog(() {
-                          selectedAdminId = adminId;
+                          selectedAdminId = adminName;
                         });
                         setState(() {
-                          _selectedAdmin = adminId;
+                          _selectedAdmin = adminName;
                           _selectedAdminName = adminName;
                         });
                         Navigator.of(context).pop();
@@ -235,7 +234,7 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
       'title': _nameController.text,
       'description': _descriptionController.text,
       'status': 'pending',
-      'timestamp': formattedDate, // Lưu thời gian dưới dạng chuỗi
+      'createdtime': formattedDate,
       'original files': _checkboxLabels.asMap().map((index, label) {
         if (_isCheckboxChecked[index] && _textControllers[index].text.isNotEmpty) {
           return MapEntry(label, _textControllers[index].text);
@@ -246,13 +245,20 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
       'nameassign': _selectedAdminName,
     };
 
-    _databaseReference.push().set(data).then((_) {
-      // Gửi thông báo đến người duyệt hồ sơ
+    // Tạo một DatabaseReference mới cho hồ sơ
+    DatabaseReference newFileRef = _databaseReference.push();
+
+    // Lưu hồ sơ và nhận ID của nó
+    newFileRef.set(data).then((_) {
+      String fileId = newFileRef.key!; // Lấy ID của phần tử đã lưu
+
+      // Gửi thông báo với ID của hồ sơ
       _sendNotificationToAdmin(
         title: _nameController.text,
         nameCreated: widget.fullName,
         datetime: formattedDate,
         adminName: _selectedAdminName!,
+        fileId: fileId, // Thêm ID của hồ sơ vào thông báo
       );
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -281,16 +287,17 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
     required String nameCreated,
     required String datetime,
     required String adminName,
+    required String fileId, // Thêm fileId vào tham số
   }) {
-    final DatabaseReference notificationsRef = FirebaseDatabase.instance.ref().child('notifications');
+    final DatabaseReference notificationsRef = FirebaseDatabase.instance.ref().child('notifications').child(fileId);
 
     final Map<String, dynamic> notificationData = {
-      'message': 'Có hồ sơ $title mới được tạo bởi $nameCreated vào ngày $datetime',
-      'adminId': _selectedAdminName,
-      'isRead': false, // Đánh dấu thông báo chưa đọc
+      'message': 'Có hồ sơ $title mới được trình ký bởi $nameCreated vào ngày $datetime',
+      'adminId': _selectedAdmin,
+      'isRead': false,
     };
 
-    notificationsRef.push().set(notificationData).catchError((error) {
+    notificationsRef.set(notificationData).catchError((error) {
       print('Lỗi gửi thông báo: $error');
     });
   }

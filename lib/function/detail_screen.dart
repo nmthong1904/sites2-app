@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'approved_screen.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final String name;
@@ -42,149 +43,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       default:
         return 'Trạng thái không xác định';
     }
-  }
-
-  void _showBottomSheet(BuildContext context) {
-    final Map<String, int?> quantities = {}; // Lưu trữ số lượng nhập từ người dùng
-    String? errorMessage; // Lưu thông báo lỗi
-
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setStateDialog) {
-            final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-            return GestureDetector(
-              onTap: () {
-                // Khi người dùng nhấn ra ngoài ô nhập dữ liệu, ẩn bàn phím
-                FocusScope.of(context).unfocus();
-              },
-              child: Container(
-                padding: EdgeInsets.only(bottom: bottomInset), // Cung cấp không gian cho bàn phím
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16.0, 20.0, 16.0, 16.0), // Cung cấp padding chính xác
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Phê duyệt hồ sơ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                        ...widget.originalFiles.entries.map((entry) {
-                          final TextEditingController _controller = TextEditingController(text: entry.value);
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text('${entry.key}', style: const TextStyle(fontSize: 16)),
-                                ),
-                                Expanded(
-                                  child: TextField(
-                                    controller: _controller,
-                                    decoration: const InputDecoration(
-                                      labelText: 'Số lượng biên bản gốc',
-                                      border: OutlineInputBorder(),
-                                    ),
-                                    keyboardType: TextInputType.number,
-                                    onChanged: (value) {
-                                      quantities[entry.key] = int.tryParse(value);
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                        const SizedBox(height: 10),
-                        // DropdownButton để chọn người soát xét
-                        FutureBuilder<QuerySnapshot>(
-                          future: FirebaseFirestore.instance
-                              .collection('users')
-                              .where('author', isEqualTo: 'manager')
-                              .get(),
-                          builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                            if (snapshot.connectionState == ConnectionState.waiting) {
-                              return const CircularProgressIndicator();
-                            } else if (snapshot.hasError) {
-                              return Text('Lỗi: ${snapshot.error}');
-                            } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                              return const Text('Không có người soát xét');
-                            }
-
-                            final List<QueryDocumentSnapshot> managers = snapshot.data!.docs;
-                            return DropdownButton<String>(
-                              hint: Text(
-                                _selectedManagerName.isEmpty
-                                    ? 'Chọn người soát xét hồ sơ'
-                                    : 'Người soát xét: $_selectedManagerName',
-                              ),
-                              isExpanded: true,
-                              value: _selectedManager,
-                              items: managers.map((manager) {
-                                final managerId = manager.id;
-                                final managerName = manager['fullName'];
-                                return DropdownMenuItem<String>(
-                                  value: managerId,
-                                  child: Text(managerName),
-                                );
-                              }).toList(),
-                              onChanged: (String? newValue) {
-                                final selectedManager = managers.firstWhere((manager) => manager.id == newValue);
-                                setStateDialog(() {
-                                  _selectedManager = newValue;
-                                  _selectedManagerName = selectedManager['fullName'];
-                                });
-                              },
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 10),
-                        if (errorMessage != null) ...[
-                          Text(errorMessage!, style: const TextStyle(color: Colors.red)),
-                          const SizedBox(height: 10),
-                        ],
-                        Center(
-                          child: ElevatedButton(
-                            onPressed: () {
-                              // Kiểm tra lỗi số lượng
-                              bool hasError = false;
-                              for (var entry in widget.originalFiles.entries) {
-                                final originalQuantity = int.tryParse(entry.value ?? '0') ?? 0;
-                                final inputQuantity = quantities[entry.key] ?? 0;
-                                if (inputQuantity > originalQuantity) {
-                                  hasError = true;
-                                  errorMessage = 'Lỗi: Số lượng nhập lớn hơn số lượng gốc';
-                                  break;
-                                }
-                              }
-
-                              if (hasError) {
-                                setStateDialog(() {}); // Cập nhật trạng thái để hiển thị thông báo lỗi
-                                return;
-                              }
-
-                              if (_selectedManager == null) {
-                                errorMessage = 'Vui lòng chọn người soát xét';
-                                setStateDialog(() {}); // Cập nhật trạng thái để hiển thị thông báo lỗi
-                                return;
-                              }
-
-                              // Xử lý logic phê duyệt với thông tin đã chọn
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text('Duyệt Hồ Sơ'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
   }
 
   @override
@@ -247,7 +105,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 children: [
                   ElevatedButton(
                     onPressed: () {
-                      _showBottomSheet(context);
+                      _navigateToApproveScreen(context);
                     },
                     child: const Text('Phê duyệt hồ sơ'),
                   ),
@@ -281,6 +139,31 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           ],
         ),
       ),
+    );
+  }
+  void _navigateToApproveScreen(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Cho phép điều chỉnh chiều cao của modal
+      backgroundColor: Colors.transparent, // Nền trong suốt
+      builder: (BuildContext context) {
+        return Container(
+          padding: const EdgeInsets.only(top: 8.0), // Khoảng cách trên để xem phần màn hình dưới
+          height: MediaQuery.of(context).size.height * 0.75, // Chiếm 3/4 chiều cao màn hình
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 10.0,
+                spreadRadius: 2.0,
+              ),
+            ],
+          ),
+          child: ApproveScreen(originalFiles: widget.originalFiles),
+        );
+      },
     );
   }
 }
