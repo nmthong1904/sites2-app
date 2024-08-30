@@ -54,6 +54,26 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
   }
 
+  String getApprovalStatus(Map<String, String?> originalFiles, Map<String, String?> approvedFiles) {
+    bool isComplete = true;
+    String incompleteDetails = '';
+
+    originalFiles.forEach((key, originalValue) {
+      int originalIntValue = int.tryParse(originalValue ?? '0') ?? 0;
+      int approvedIntValue = int.tryParse(approvedFiles[key] ?? '0') ?? 0;
+      if (approvedIntValue < originalIntValue) {
+        isComplete = false;
+        incompleteDetails += '$key: $approvedIntValue/$originalIntValue\n';
+      }
+    });
+
+    if (isComplete) {
+      return 'Hồ sơ trình ký hoàn chỉnh ';
+    } else {
+      return 'Hồ sơ trình ký chưa hoàn chỉnh:\n$incompleteDetails';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,59 +99,50 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Tiêu đề: ${widget.name}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-            Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: 'Mô tả: ${widget.description}\n',
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  TextSpan(
-                    text: 'Trạng thái: ${_getStatusText(widget.status)}\n',
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  TextSpan(
-                    text: 'Ngày tạo hồ sơ: ${widget.datetime}\n',
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  TextSpan(
-                    text: 'Người tạo: ${widget.nameCreated}\n',
+            const SizedBox(height: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Mô tả: ${widget.description}',
+                  style: const TextStyle(fontSize: 16),
+                ),
+                Text(
+                  'Trạng thái: ${_getStatusText(widget.status)}',
+                  style: const TextStyle(fontSize: 16),
+                ),
+                Text(
+                  'Ngày tạo hồ sơ: ${widget.datetime}',
+                  style: const TextStyle(fontSize: 16),
+                ),
+                Text(
+                  'Người tạo: ${widget.nameCreated}',
+                  style: const TextStyle(fontSize: 16),
+                ),
+                if (widget.approvedtime != null) ...[
+                  const SizedBox(height: 8), // Khoảng cách
+                  Text('Thời gian phê duyệt: ${widget.approvedtime}',
                     style: const TextStyle(fontSize: 16),
                   ),
                 ],
-              ),
-              style: const TextStyle(height: 1.5),
-            ),
-            Text.rich(
-                TextSpan(
-                children:[
-                  if (widget.approvedtime != null)
-                    TextSpan(
-                      text: 'Thời gian phê duyệt: ${widget.approvedtime}\n',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  if (widget.approvedName != null)
-                    TextSpan(
-                      text: 'Người phê duyệt: ${widget.assignName}\n',
-                      style: const TextStyle(fontSize: 16),
-                    ),
+                if (widget.approvedName != null) ...[
+                  Text('Người phê duyệt: ${widget.assignName}',
+                    style: const TextStyle(fontSize: 16),
+                  ),
                 ],
-              ),
+              ],
             ),
-            Text('Biên bản gốc bao gồm', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            ...widget.originalFiles.entries.map((entry) {
-              return Text('${entry.value ?? 'Không có dữ liệu'} ${entry.key}', style: const TextStyle(fontSize: 16));
-            }).toList(),
-            const SizedBox(height: 10),
-            // Hiển thị các dữ liệu mới nếu có
-            if (widget.approvedFiles.isNotEmpty) ...[
-              Text('Biên bản đã phê duyệt:', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              ...widget.approvedFiles.entries.map((entry) {
+            const SizedBox(height: 8), // Khoảng cách
+            if (widget.status == 'pending') ...[
+              Text('Biên bản gốc bao gồm', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              ...widget.originalFiles.entries.map((entry) {
                 return Text('${entry.value ?? 'Không có dữ liệu'} ${entry.key}', style: const TextStyle(fontSize: 16));
               }).toList(),
+            ] else ...[
+              // Hiển thị trạng thái so sánh
+              Text(getApprovalStatus(widget.originalFiles, widget.approvedFiles), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
             ],
-            const SizedBox(height: 10),
             // Hiển thị các nút hành động tùy theo vai trò của author
             if (widget.author == 'admin') ...[
               Row(
@@ -157,7 +168,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   onPressed: () {
                     // Xử lý logic hoàn thành soát xét
                   },
-                  child: const Text('Đã Soát Xét Hồ Sơ'),
+                  child: const Text('Kiểm tra hồ sơ'),
                 ),
               ),
             ] else if (widget.author == 'stamper') ...[
@@ -195,7 +206,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
             ],
           ),
-          child: ApproveScreen(originalFiles: widget.originalFiles,fileId: widget.fileId),
+          child: ApproveScreen(originalFiles: widget.originalFiles, fileId: widget.fileId),
         );
       },
     );

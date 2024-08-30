@@ -45,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
         } else if (widget.author == 'admin') {
           files = files.where((file) => file['assignName'] == widget.fullName).toList();
         } else if (widget.author == 'manager') {
-          files = files.where((file) => file['namemanager'] == widget.fullName).toList();
+          files = files.where((file) => file['approvedName'] == widget.fullName).toList();
         } else if (widget.author == 'stamper') {
           files = files.where((file) => file['namestamper'] == widget.fullName).toList();
         }
@@ -138,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
         index: _currentIndex,
         children: [
           _buildHomeScreen(),
-          AddNewFileScreen(fullName: widget.fullName),
+          AddNewFileScreen(fullName: widget.fullName, author: widget.author),
           NotificationScreen(fullName: widget.fullName,author: widget.author),
           const Center(child: Text('Tài khoản')),
         ],

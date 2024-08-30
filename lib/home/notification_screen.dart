@@ -30,21 +30,19 @@ class _NotificationScreenState extends State<NotificationScreen> {
         List<Map<dynamic, dynamic>> notifications = [];
         List<String> keys = [];
 
-        data.forEach((key, value) {
-          notifications.add(value);
-          keys.add(key); // Store each key associated with the notification
+        data.forEach((fileId, fileNotifications) {
+          if (fileNotifications is Map<dynamic, dynamic>) {
+            fileNotifications.forEach((adminName, notificationDetails) {
+              if (notificationDetails is Map<dynamic, dynamic>) {
+                // So sánh trực tiếp với widget.fullName
+                if (adminName == widget.fullName) {
+                  notifications.add(notificationDetails);
+                  keys.add(fileId); // Lưu lại fileId làm key
+                }
+              }
+            });
+          }
         });
-
-        // Apply filter based on author
-        if (widget.author == 'user') {
-          notifications = notifications.where((file) => file['userId'] == widget.fullName).toList();
-        } else if (widget.author == 'admin') {
-          notifications = notifications.where((file) => file['adminId'] == widget.fullName).toList();
-        } else if (widget.author == 'manager') {
-          notifications = notifications.where((file) => file['managerId'] == widget.fullName).toList();
-        } else if (widget.author == 'stamper') {
-          notifications = notifications.where((file) => file['stamperId'] == widget.fullName).toList();
-        }
 
         setState(() {
           _notifications = notifications;
@@ -53,6 +51,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
       }
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +69,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
             onTap: () {
               // Cập nhật trạng thái thông báo khi người dùng xem
               if (notification['isRead'] == false) {
-                _notificationsRef.child(notificationKey).update({'isRead': true});
+                _notificationsRef.child(notificationKey).child(widget.fullName).update({'isRead': true});
               }
             },
           );

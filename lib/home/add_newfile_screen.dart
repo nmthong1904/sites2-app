@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart'; // Thêm thư viện intl để định dạng ngày tháng
+import 'package:intl/intl.dart';
+
+import '../function/processingdialog_screen.dart';
+import 'home_screen.dart'; // Thêm thư viện intl để định dạng ngày tháng
 
 class AddNewFileScreen extends StatefulWidget {
   final String fullName;
+  final String author;
 
-  const AddNewFileScreen({Key? key, required this.fullName}) : super(key: key);
+  const AddNewFileScreen({Key? key, required this.fullName, required this.author}) : super(key: key);
 
   @override
   _AddNewFileScreenState createState() => _AddNewFileScreenState();
@@ -186,6 +190,7 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
   }
 
   void _saveData() {
+    // Kiểm tra đầu vào trước khi lưu
     if (_nameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Vui lòng nhập tiêu đề')),
@@ -227,6 +232,15 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
       return;
     }
 
+    // Hiển thị dialog xử lý trước khi lưu dữ liệu
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return ProcessingdialogScreen();
+      },
+    );
+
     String formattedDate = DateFormat('HH:mm dd/MM/yyyy').format(DateTime.now());
 
     final Map<String, dynamic> data = {
@@ -261,21 +275,19 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
         fileId: fileId, // Thêm ID của hồ sơ vào thông báo
       );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Hồ sơ đã được lưu')),
-      );
-      _nameController.clear();
-      _descriptionController.clear();
-      setState(() {
-        for (int i = 0; i < _isCheckboxChecked.length; i++) {
-          _isCheckboxChecked[i] = false;
-        }
-        _textControllers.forEach((controller) => controller.clear());
-        _selectedAdmin = null;
-        _selectedAdminName = '';
+      // Đợi một khoảng thời gian để giả lập xử lý
+      Future.delayed(Duration(seconds: 2), () {
+        Navigator.of(context).pop(); // Đóng dialog xử lý
+        // Quay lại màn hình HomeScreen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomeScreen(fullName: widget.fullName, author: widget.author),
+          ),
+        );
       });
-      FocusScope.of(context).requestFocus(FocusNode());
     }).catchError((error) {
+      Navigator.of(context).pop(); // Đóng dialog nếu gặp lỗi
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Lỗi: $error')),
       );
@@ -292,9 +304,10 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
     final DatabaseReference notificationsRef = FirebaseDatabase.instance.ref().child('notifications').child(fileId);
 
     final Map<String, dynamic> notificationData = {
-      'message': 'Có hồ sơ $title mới được trình ký bởi $nameCreated vào ngày $datetime',
-      'adminId': _selectedAdmin,
-      'isRead': false,
+      adminName:{
+        'message': 'Có hồ sơ $title mới được trình ký bởi $nameCreated vào ngày $datetime',
+        'isRead': false,
+      }
     };
 
     notificationsRef.set(notificationData).catchError((error) {

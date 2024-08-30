@@ -6,11 +6,11 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:sites2app/function/processingdialog_screen.dart';
 
 
-class ApproveScreen extends StatefulWidget {
+class DeployedScreen extends StatefulWidget {
   final Map<String, String?> originalFiles;
   final String fileId; // Thêm biến fileId
 
-  const ApproveScreen({
+  const DeployedScreen({
     required this.originalFiles,
     required this.fileId, // Thêm biến fileId
     Key? key,
@@ -20,7 +20,7 @@ class ApproveScreen extends StatefulWidget {
   _ApproveScreenState createState() => _ApproveScreenState();
 }
 
-class _ApproveScreenState extends State<ApproveScreen> {
+class _ApproveScreenState extends State<DeployedScreen> {
   String? _selectedManager;
   String _selectedManagerName = '';
   final Map<String, TextEditingController> _controllers = {}; // Quản lý TextEditingController
