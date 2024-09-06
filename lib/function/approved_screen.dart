@@ -9,10 +9,16 @@ import 'package:sites2app/function/processingdialog_screen.dart';
 class ApproveScreen extends StatefulWidget {
   final Map<String, String?> originalFiles;
   final String fileId; // Thêm biến fileId
+  final String name; // Thêm biến fileId
+  final String createdName; // Thêm biến fileId
+  final String approvedName; // Thêm biến fileId
 
   const ApproveScreen({
     required this.originalFiles,
     required this.fileId, // Thêm biến fileId
+    required this.name, // Thêm biến fileId
+    required this.createdName, // Thêm biến fileId
+    required this.approvedName, // Thêm biến fileId
     Key? key,
   }) : super(key: key);
 
@@ -189,7 +195,21 @@ class _ApproveScreenState extends State<ApproveScreen> {
                     'approvedtime': approvedTime,
                     'approvedFiles': approvedFiles,
                     'status': 'approved',
-                    'approvedName': _selectedManagerName,
+                    'deployedName': _selectedManagerName,
+                  });
+                  // Cập nhật vào Firebase Realtime Database notifications
+                  await FirebaseDatabase.instance.ref().child('notifications').child(widget.fileId).update({
+                    _selectedManagerName:{
+                        'message': 'Có hồ sơ ${widget.name} của ${widget.createdName} cần được kiểm tra',
+                        'isRead': false,
+                    }
+                  });
+                  // Cập nhật vào Firebase Realtime Database notifications
+                  await FirebaseDatabase.instance.ref().child('notifications').child(widget.fileId).update({
+                    widget.createdName:{
+                      'message': 'Hồ sơ ${widget.name} vừa được ký bởi ${widget.approvedName} vào ngày $approvedTime',
+                      'isRead': false,
+                    }
                   });
 
                   // Đợi 2 giây

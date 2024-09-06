@@ -244,7 +244,7 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
     String formattedDate = DateFormat('HH:mm dd/MM/yyyy').format(DateTime.now());
 
     final Map<String, dynamic> data = {
-      'namecreated': widget.fullName,
+      'createdName': widget.fullName,
       'title': _nameController.text,
       'description': _descriptionController.text,
       'status': 'pending',
@@ -256,7 +256,7 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
           return MapEntry(label, null);
         }
       })..removeWhere((key, value) => value == null),
-      'assignName': _selectedAdminName,
+      'approvedName': _selectedAdminName,
     };
 
     // Tạo một DatabaseReference mới cho hồ sơ

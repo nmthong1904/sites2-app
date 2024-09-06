@@ -7,22 +7,28 @@ import 'package:sites2app/function/processingdialog_screen.dart';
 
 
 class DeployedScreen extends StatefulWidget {
-  final Map<String, String?> originalFiles;
+  final Map<String, String?> approvedFiles;
   final String fileId; // Thêm biến fileId
+  final String name; // Thêm biến fileId
+  final String createdName; // Thêm biến fileId
+  final String stamperName; // Thêm biến fileId
 
   const DeployedScreen({
-    required this.originalFiles,
+    required this.approvedFiles,
     required this.fileId, // Thêm biến fileId
+    required this.name, // Thêm biến fileId
+    required this.createdName, // Thêm biến fileId
+    required this.stamperName, // Thêm biến fileId
     Key? key,
   }) : super(key: key);
 
   @override
-  _ApproveScreenState createState() => _ApproveScreenState();
+  _DeployedScreenState createState() => _DeployedScreenState();
 }
 
-class _ApproveScreenState extends State<DeployedScreen> {
-  String? _selectedManager;
-  String _selectedManagerName = '';
+class _DeployedScreenState extends State<DeployedScreen> {
+  String? _selectedStamper;
+  String _selectedStamperName = '';
   final Map<String, TextEditingController> _controllers = {}; // Quản lý TextEditingController
   final Map<String, int?> quantities = {}; // Lưu trữ số lượng nhập từ người dùng
   final Map<String, String?> errorMessages = {}; // Lưu trữ thông báo lỗi riêng cho từng ô
@@ -32,7 +38,7 @@ class _ApproveScreenState extends State<DeployedScreen> {
   void initState() {
     super.initState();
     // Khởi tạo TextEditingController cho mỗi mục
-    widget.originalFiles.forEach((key, value) {
+    widget.approvedFiles.forEach((key, value) {
       _controllers[key] = TextEditingController(text: value);
     });
   }
@@ -54,7 +60,7 @@ class _ApproveScreenState extends State<DeployedScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text('Phê duyệt hồ sơ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            ...widget.originalFiles.entries.map((entry) {
+            ...widget.approvedFiles.entries.map((entry) {
               final key = entry.key;
               final controller = _controllers[key]!;
               return Padding(
@@ -80,9 +86,9 @@ class _ApproveScreenState extends State<DeployedScreen> {
                               final parsedValue = int.tryParse(value);
                               quantities[key] = parsedValue;
                               if (parsedValue == null || parsedValue <= 0) {
-                                errorMessages[key] = 'Số lượng biên bản duyệt không phù hợp';
-                              } else if (parsedValue > (int.tryParse(widget.originalFiles[key]!) ?? 0)) {
-                                errorMessages[key] = 'Số lượng biên bản duyệt lớn hơn số lượng gốc';
+                                errorMessages[key] = 'Số lượng biên bản kiểm tra không phù hợp';
+                              } else if (parsedValue > (int.tryParse(widget.approvedFiles[key]!) ?? 0)) {
+                                errorMessages[key] = 'Số lượng biên bản kiểm tra lớn hơn số lượng được phê duyệt';
                               } else {
                                 errorMessages.remove(key); // Xóa thông báo lỗi nếu hợp lệ
                               }
@@ -104,12 +110,12 @@ class _ApproveScreenState extends State<DeployedScreen> {
               );
             }).toList(),
             const SizedBox(height: 10),
-            const Text('Chọn người soát xét hồ sơ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text('Chọn người đóng dấu hồ sơ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             FutureBuilder<QuerySnapshot>(
               future: FirebaseFirestore.instance
                   .collection('users')
-                  .where('author', isEqualTo: 'manager')
+                  .where('author', isEqualTo: 'stamper')
                   .get(),
               builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -117,22 +123,22 @@ class _ApproveScreenState extends State<DeployedScreen> {
                 } else if (snapshot.hasError) {
                   return Text('Lỗi: ${snapshot.error}');
                 } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Text('Không có người soát xét');
+                  return const Text('Vui lòng chọn người đóng dấu hồ sơ');
                 }
 
-                final List<QueryDocumentSnapshot> managers = snapshot.data!.docs;
+                final List<QueryDocumentSnapshot> stampers = snapshot.data!.docs;
                 return Column(
-                  children: managers.map((manager) {
-                    final managerId = manager.id;
-                    final managerName = manager['fullName'];
+                  children: stampers.map((stampers) {
+                    final stamperId = stampers.id;
+                    final stamperName = stampers['fullName'];
                     return RadioListTile<String>(
-                      title: Text(managerName),
-                      value: managerId,
-                      groupValue: _selectedManager,
+                      title: Text(stamperName),
+                      value: stamperId,
+                      groupValue: _selectedStamper,
                       onChanged: (value) {
                         setState(() {
-                          _selectedManagerName = managerName;
-                          _selectedManager = value;
+                          _selectedStamperName = stamperName;
+                          _selectedStamper = value;
                           managerErrorMessage = null; // Xóa thông báo lỗi khi người dùng chọn người soát xét
                         });
                       },
@@ -159,9 +165,9 @@ class _ApproveScreenState extends State<DeployedScreen> {
                   }
 
                   // Kiểm tra xem đã chọn người soát xét hay chưa
-                  if (_selectedManager == null) {
+                  if (_selectedStamper == null) {
                     setState(() {
-                      managerErrorMessage = 'Vui lòng chọn người soát xét';
+                      managerErrorMessage = 'Vui lòng chọn người đóng dấu hồ sơ';
                     });
                     return;
                   }
@@ -176,22 +182,34 @@ class _ApproveScreenState extends State<DeployedScreen> {
                   );
 
                   // Lấy thời gian hiện tại
-                  final approvedTime = DateFormat('HH:mm dd/MM/yyyy').format(DateTime.now());
+                  final deployedTime = DateFormat('HH:mm dd/MM/yyyy').format(DateTime.now());
 
                   // Tạo map để lưu các file đã được duyệt
-                  final approvedFiles = Map<String, String?>.from(widget.originalFiles);
+                  final deployedFiles = Map<String, String?>.from(widget.approvedFiles);
                   quantities.forEach((key, value) {
-                    approvedFiles[key] = value.toString(); // Cập nhật số lượng đã duyệt
+                    deployedFiles[key] = value.toString(); // Cập nhật số lượng đã duyệt
                   });
 
                   // Cập nhật vào Firebase Realtime Database
                   await FirebaseDatabase.instance.ref().child('files').child(widget.fileId).update({
-                    'approvedtime': approvedTime,
-                    'approvedFiles': approvedFiles,
-                    'status': 'approved',
-                    'approvedName': _selectedManagerName,
+                    'deployedtime': deployedTime,
+                    'deployedFiles': deployedFiles,
+                    'status': 'deployed',
+                    'stamperName': _selectedStamperName,
                   });
-
+                  // Cập nhật vào Firebase Realtime Database notifications
+                  await FirebaseDatabase.instance.ref().child('notifications').child(widget.fileId).update({
+                    _selectedStamperName:{
+                      'message': 'Có hồ sơ ${widget.name} của ${widget.createdName} cần được đóng dấu',
+                      'isRead': false,
+                    }
+                  });
+                  await FirebaseDatabase.instance.ref().child('notifications').child(widget.fileId).update({
+                    widget.createdName:{
+                      'message': 'Hồ sơ ${widget.name} vừa được kiểm tra bởi ${widget.stamperName} vào ngày $deployedTime',
+                      'isRead': false,
+                    }
+                  });
                   // Đợi 2 giây
                   await Future.delayed(const Duration(seconds: 2));
 

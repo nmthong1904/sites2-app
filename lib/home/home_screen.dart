@@ -41,13 +41,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
         // Apply filter based on author
         if (widget.author == 'user') {
-          files = files.where((file) => file['namecreated'] == widget.fullName).toList();
+          files = files.where((file) => file['createdName'] == widget.fullName).toList();
         } else if (widget.author == 'admin') {
-          files = files.where((file) => file['assignName'] == widget.fullName).toList();
-        } else if (widget.author == 'manager') {
           files = files.where((file) => file['approvedName'] == widget.fullName).toList();
+        } else if (widget.author == 'manager') {
+          files = files.where((file) => file['deployedName'] == widget.fullName).toList();
         } else if (widget.author == 'stamper') {
-          files = files.where((file) => file['namestamper'] == widget.fullName).toList();
+          files = files.where((file) => file['stamperName'] == widget.fullName).toList();
         }
 
         setState(() {
@@ -65,10 +65,10 @@ class _HomeScreenState extends State<HomeScreen> {
         String titleB = b['title'] ?? '';
         return titleA.toLowerCase().compareTo(titleB.toLowerCase());
       });
-    } else if (_sortBy == 'timestamp') {
+    } else if (_sortBy == 'createdtime') {
       _files.sort((a, b) {
-        DateTime datetimeA = DateFormat('HH:mm dd/MM/yyyy').parse(a['timestamp']);
-        DateTime datetimeB = DateFormat('HH:mm dd/MM/yyyy').parse(b['timestamp']);
+        DateTime datetimeA = DateFormat('HH:mm dd/MM/yyyy').parse(a['createdtime']);
+        DateTime datetimeB = DateFormat('HH:mm dd/MM/yyyy').parse(b['createdtime']);
         return datetimeB.compareTo(datetimeA); // Sắp xếp từ mới nhất đến cũ nhất
       });
     }
@@ -183,15 +183,16 @@ class _HomeScreenState extends State<HomeScreen> {
         final file = _files[index];
         final originalFiles = (file['original files'] as Map<dynamic, dynamic>?)?.cast<String, String?>() ?? {};
         final approvedFiles = (file['approvedFiles'] as Map<dynamic, dynamic>?)?.cast<String, String?>() ?? {};
+        final deployedFiles = (file['deployedFiles'] as Map<dynamic, dynamic>?)?.cast<String, String?>() ?? {};
 
         return ListTile(
-          title: Text('Tiêu đề: ' + file['title'] ?? 'Tên không xác định'),
+          title: Text('Tiêu đề: ' + file['title'] ?? 'Tên không xác định', style: const TextStyle(fontWeight: FontWeight.bold)),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Trạng thái: ' + _getStatusText(file['status'])),
               Text('Ngày tạo: ' + file['createdtime'] ?? 'Chưa xác định'),
-              Text('Người trình ký: ' + file['namecreated'] ?? 'Không có thông tin'),
+              Text('Người trình ký: ' + file['createdName'] ?? 'Không có thông tin'),
             ],
           ),
           trailing: Icon(
@@ -209,13 +210,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   status: file['status'] ?? 'Chưa xác định',
                   datetime: file['createdtime'] ?? 'Chưa xác định',
                   originalFiles: originalFiles,
-                  nameCreated: file['namecreated'] ?? 'Không có thông tin',
+                  nameCreated: file['createdName'] ?? 'Không có thông tin',
                   author: widget.author,
                   fileId: file['id'], // Truyền fileId vào đây
                   approvedFiles: approvedFiles, // Truyền approvedFiles
                   approvedtime: file['approvedtime'], // Truyền approvedtime
                   approvedName: file['approvedName'], // Truyền approvedName
-                  assignName: file['assignName'], // Truyền approvedName
+                  deployedFiles: deployedFiles, // Truyền deployedFiles
+                  deployedtime: file['deployedtime'], // Truyền deployedtime
+                  deployedName: file['deployedName'], // Truyền deployedName
+                  stampertime: file['stampertime'], // Truyền deployedtime
+                  stamperName: file['stamperName'], // Truyền stamperName
                 ),
               ),
             );
