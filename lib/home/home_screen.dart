@@ -186,13 +186,70 @@ class _HomeScreenState extends State<HomeScreen> {
         final deployedFiles = (file['deployedFiles'] as Map<dynamic, dynamic>?)?.cast<String, String?>() ?? {};
 
         return ListTile(
-          title: Text('Tiêu đề: ' + file['title'] ?? 'Tên không xác định', style: const TextStyle(fontWeight: FontWeight.bold)),
+          title: RichText(
+            text: TextSpan(
+              children: <TextSpan>[
+                const TextSpan(
+                  text: 'Tiêu đề: ',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.black,height: 1.5),
+                ),
+                TextSpan(
+                  text: file['title'],
+                  style: const TextStyle(fontSize: 16,color: Colors.black,height: 1.5),
+                ),
+              ],
+            ),
+          ),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Trạng thái: ' + _getStatusText(file['status'])),
-              Text('Ngày tạo: ' + file['createdtime'] ?? 'Chưa xác định'),
-              Text('Người trình ký: ' + file['createdName'] ?? 'Không có thông tin'),
+              RichText(
+                text: TextSpan(
+                  children: <TextSpan>[
+                    const TextSpan(
+                      text: 'Trạng thái: ',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.black,height: 1.5),
+                    ),
+                    TextSpan(
+                      text: _getStatusText(file['status']),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: _getStatusColor(file['status']), // Thay đổi màu sắc dựa trên status
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              RichText(
+                text: TextSpan(
+                  children: <TextSpan>[
+                    const TextSpan(
+                      text: 'Ngày tạo: ',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.black,height: 1.5),
+                    ),
+                    TextSpan(
+                      text: file['createdtime'],
+                      style: const TextStyle(fontSize: 16,color: Colors.black,height: 1.5),
+                    ),
+                  ],
+                ),
+              ),
+              RichText(
+                text: TextSpan(
+                  children: <TextSpan>[
+                    const TextSpan(
+                      text: 'Người trình ký: ',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.black,height: 1.5),
+                    ),
+                    TextSpan(
+                      text: file['createdName'],
+                      style: const TextStyle(fontSize: 16,color: Colors.black,height: 1.5),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
           trailing: Icon(
@@ -234,7 +291,7 @@ class _HomeScreenState extends State<HomeScreen> {
       case 'approved':
       case 'deployed':
       case 'pending':
-        return Colors.yellow;
+        return Colors.lightBlueAccent;
       case 'finished':
         return Colors.green;
       case 'denied':

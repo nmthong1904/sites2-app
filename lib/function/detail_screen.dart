@@ -66,7 +66,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     }
   }
 
-  String getApprovedStatus(Map<String, String?> originalFiles, Map<String, String?> approvedFiles) {
+  RichText getApprovedStatus(Map<String, String?> originalFiles, Map<String, String?> approvedFiles) {
     bool isComplete = true;
     String incompleteDetails = '';
 
@@ -82,12 +82,46 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     });
 
     if (isComplete) {
-      return 'Hồ sơ trình ký hoàn chỉnh';
+      return RichText(
+        text: const TextSpan(
+          children: <TextSpan>[
+            TextSpan(
+              text: 'Hồ sơ trình ký hoàn chỉnh',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,height: 1.5
+              ),
+            ),
+          ],
+        ),
+      );
     } else {
-      return 'Hồ sơ trình ký được phê duyệt\n$incompleteDetails';
+      return RichText(
+        text: TextSpan(
+          children: <TextSpan>[
+            const TextSpan(
+              text: 'Hồ sơ trình ký được phê duyệt\n',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,height: 1.5
+              ),
+            ),
+            TextSpan(
+              text: incompleteDetails,
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.black,height: 1.5
+              ),
+            ),
+          ],
+        ),
+      );
     }
   }
-  String getDeployedStatus(Map<String, String?> approvedFiles, Map<String, String?> deployedFiles) {
+
+  RichText getDeployedStatus(Map<String, String?> approvedFiles, Map<String, String?> deployedFiles) {
     bool isComplete = true;
     String incompleteDetails = '';
 
@@ -103,9 +137,42 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     });
 
     if (isComplete) {
-      return 'Hồ sơ kiểm tra hoàn chỉnh';
+      return RichText(
+        text: const TextSpan(
+          children: <TextSpan>[
+            TextSpan(
+              text: 'Hồ sơ kiểm tra hoàn chỉnh',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,height: 1.5
+              ),
+            ),
+          ],
+        ),
+      );
     } else {
-      return 'Hồ sơ kiểm tra đạt yêu cầu\n$incompleteDetails';
+      return RichText(
+        text: TextSpan(
+          children: <TextSpan>[
+            const TextSpan(
+              text: 'Hồ sơ kiểm tra đạt yêu cầu\n',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,height: 1.5
+              ),
+            ),
+            TextSpan(
+              text: incompleteDetails,
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.black,height: 1.5
+              ),
+            ),
+          ],
+        ),
+      );
     }
   }
 
@@ -133,58 +200,177 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Tiêu đề: ${widget.name}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            RichText(
+              text: TextSpan(
+                children: <TextSpan>[
+                  const TextSpan(
+                    text: 'Tiêu đề: ',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,color: Colors.black),
+                  ),
+                  TextSpan(
+                    text: widget.name,
+                    style: const TextStyle(fontSize: 20,color: Colors.black),
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 8),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Mô tả: ${widget.description}',
-                  style: const TextStyle(fontSize: 16),
+                RichText(
+                  text: TextSpan(
+                    children: <TextSpan>[
+                      const TextSpan(
+                        text: 'Mô tả: ',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.black,height: 1.5),
+                      ),
+                      TextSpan(
+                        text: widget.description,
+                        style: const TextStyle(fontSize: 16,color: Colors.black,height: 1.5),
+                      ),
+                    ],
+                  ),
                 ),
-                Text(
-                  'Trạng thái: ${_getStatusText(widget.status)}',
-                  style: const TextStyle(fontSize: 16),
+                RichText(
+                  text: TextSpan(
+                    children: <TextSpan>[
+                      const TextSpan(
+                        text: 'Trạng thái: ',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.black,height: 1.5),
+                      ),
+                      TextSpan(
+                        text: _getStatusText(widget.status),
+                        style: const TextStyle(fontSize: 16,color: Colors.black,height: 1.5),
+                      ),
+                    ],
+                  ),
                 ),
-                Text(
-                  'Ngày tạo hồ sơ: ${widget.datetime}',
-                  style: const TextStyle(fontSize: 16),
+                RichText(
+                  text: TextSpan(
+                    children: <TextSpan>[
+                      const TextSpan(
+                        text: 'Ngày tạo hồ sơ: ',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.black,height: 1.5),
+                      ),
+                      TextSpan(
+                        text: widget.datetime,
+                        style: const TextStyle(fontSize: 16,color: Colors.black,height: 1.5),
+                      ),
+                    ],
+                  ),
                 ),
-                Text(
-                  'Người tạo: ${widget.nameCreated}',
-                  style: const TextStyle(fontSize: 16),
+                RichText(
+                  text: TextSpan(
+                    children: <TextSpan>[
+                      const TextSpan(
+                        text: 'Người tạo: ',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.black,height: 1.5),
+                      ),
+                      TextSpan(
+                        text: widget.nameCreated,
+                        style: const TextStyle(fontSize: 16,color: Colors.black,height: 1.5),
+                      ),
+                    ],
+                  ),
                 ),
                 if (widget.approvedName != null && widget.status != 'pending') ...[
                   const SizedBox(height: 8), // Khoảng cách
-                  Text('Người ký hồ sơ: ${widget.approvedName}',
-                    style: const TextStyle(fontSize: 16),
+                  RichText(
+                    text: TextSpan(
+                      children: <TextSpan>[
+                        const TextSpan(
+                          text: 'Người ký hồ sơ: ',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.black,height: 1.5),
+                        ),
+                        TextSpan(
+                          text: widget.approvedName,
+                          style: const TextStyle(fontSize: 16,color: Colors.black,height: 1.5),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
                 if (widget.approvedtime != null) ...[
-                  Text('Thời gian ký hồ sơ: ${widget.approvedtime}',
-                    style: const TextStyle(fontSize: 16),
+                  RichText(
+                    text: TextSpan(
+                      children: <TextSpan>[
+                        const TextSpan(
+                          text: 'Thời gian ký hồ sơ: ',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.black,height: 1.5),
+                        ),
+                        TextSpan(
+                          text: widget.approvedtime,
+                          style: const TextStyle(fontSize: 16,color: Colors.black,height: 1.5),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
                 if (widget.deployedName != null && widget.status != 'approved') ...[
                   const SizedBox(height: 8), // Khoảng cách
-                  Text('Người kiểm tra hồ sơ: ${widget.deployedName}',
-                    style: const TextStyle(fontSize: 16),
+                  RichText(
+                    text: TextSpan(
+                      children: <TextSpan>[
+                        const TextSpan(
+                          text: 'Người kiểm tra hồ sơ: ',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.black,height: 1.5),
+                        ),
+                        TextSpan(
+                          text: widget.deployedName,
+                          style: const TextStyle(fontSize: 16,color: Colors.black,height: 1.5),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
                 if (widget.deployedtime != null) ...[
-                  Text('Thời gian kiểm tra: ${widget.deployedtime}',
-                    style: const TextStyle(fontSize: 16),
+                  RichText(
+                    text: TextSpan(
+                      children: <TextSpan>[
+                        const TextSpan(
+                          text: 'Thời gian kiểm tra: ',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.black,height: 1.5),
+                        ),
+                        TextSpan(
+                          text: widget.deployedtime,
+                          style: const TextStyle(fontSize: 16,color: Colors.black,height: 1.5),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
                 if (widget.stamperName != null  && widget.status != 'deployed' ) ...[
                   const SizedBox(height: 8), // Khoảng cách
-                  Text('Người đóng dấu hồ sơ: ${widget.stamperName}',
-                    style: const TextStyle(fontSize: 16),
+                  RichText(
+                    text: TextSpan(
+                      children: <TextSpan>[
+                        const TextSpan(
+                          text: 'Người đóng dấu hồ sơ: ',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.black,height: 1.5),
+                        ),
+                        TextSpan(
+                          text: widget.stamperName,
+                          style: const TextStyle(fontSize: 16,color: Colors.black,height: 1.5),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
                 if (widget.stampertime != null) ...[
-                  Text('Thời gian đóng dấu: ${widget.stampertime}',
-                    style: const TextStyle(fontSize: 16),
+                  RichText(
+                    text: TextSpan(
+                      children: <TextSpan>[
+                        const TextSpan(
+                          text: 'Thời gian đóng dấu: ',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.black,height: 1.5),
+                        ),
+                        TextSpan(
+                          text: widget.stampertime,
+                          style: const TextStyle(fontSize: 16,color: Colors.black,height: 1.5),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ],
@@ -197,25 +383,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               }).toList(),
             ] else if (widget.status == 'approved')...[
               // Hiển thị trạng thái so sánh
-              Text(getApprovedStatus(widget.originalFiles, widget.approvedFiles), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              getApprovedStatus(widget.originalFiles, widget.approvedFiles),
             ] else ...[
               RichText(
                 text: TextSpan(
                   children: [
-                    TextSpan(
-                      text: getApprovedStatus(widget.originalFiles, widget.approvedFiles),
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.black),
-                    ),
+                    getApprovedStatus(widget.originalFiles, widget.approvedFiles).text, // TextSpan từ RichText
                     const WidgetSpan(
-                      child: SizedBox(height: 24), // Sử dụng WidgetSpan để thêm khoảng cách
+                      child: SizedBox(height: 28), // Thêm khoảng cách giữa các phần
                     ),
-                    TextSpan(
-                      text: getDeployedStatus(widget.approvedFiles, widget.deployedFiles),
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
-                    ),
+                    getDeployedStatus(widget.originalFiles, widget.approvedFiles).text, // TextSpan từ RichText
                   ],
                 ),
-              )
+              ),
             ],
             // Hiển thị các nút hành động tùy theo vai trò của author
             if (widget.author == 'admin') ...[
