@@ -18,13 +18,37 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   List<Map<dynamic, dynamic>> _files = [];
+  int _unreadNotificationsCount = 0;
   final DatabaseReference _databaseReference = FirebaseDatabase.instance.ref().child('files');
+  final DatabaseReference _notificationsRef = FirebaseDatabase.instance.ref().child('notifications');
   String _sortBy = 'title'; // Biến để theo dõi kiểu sắp xếp hiện tại
 
   @override
   void initState() {
     super.initState();
     _loadFiles();
+    _loadUnreadNotificationsCount(); // Thêm dòng này
+  }
+
+  Future<void> _loadUnreadNotificationsCount() async {
+    _notificationsRef.onValue.listen((event) {
+      final data = event.snapshot.value as Map<dynamic, dynamic>?;
+      if (data != null) {
+        int count = 0;
+        data.forEach((fileId, fileNotifications) {
+          if (fileNotifications is Map<dynamic, dynamic>) {
+            fileNotifications.forEach((adminName, notificationDetails) {
+              if (notificationDetails is Map<dynamic, dynamic> && adminName == widget.fullName && notificationDetails['isRead'] == false) {
+                count++;
+              }
+            });
+          }
+        });
+        setState(() {
+          _unreadNotificationsCount = count;
+        });
+      }
+    });
   }
 
   Future<void> _loadFiles() async {
@@ -145,26 +169,46 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (index) {
+        onTap: (index) async {
+          if (index == 2) { // Tab thông báo
+            await _markAllNotificationsAsRead();
+          }
           setState(() {
             _currentIndex = index;
           });
         },
         iconSize: 35,
-        items: const [
-          BottomNavigationBarItem(
+        items: [
+          const BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Trang chủ',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.add_box),
             label: 'Tạo hồ sơ',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
+            icon: Stack(
+              children: [
+                const Icon(Icons.notifications),
+                if (_unreadNotificationsCount > 0)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: CircleAvatar(
+                      radius: 10,
+                      backgroundColor: Colors.red,
+                      child: Text(
+                        '$_unreadNotificationsCount',
+                        style: const TextStyle(color: Colors.white, fontSize: 12),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
             label: 'Thông báo',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.account_circle),
             label: 'Tài khoản',
           ),
@@ -174,6 +218,21 @@ class _HomeScreenState extends State<HomeScreen> {
         showUnselectedLabels: true,
       ),
     );
+  }
+  Future<void> _markAllNotificationsAsRead() async {
+    final data = (await _notificationsRef.once()).snapshot.value as Map<dynamic, dynamic>?;
+    if (data != null) {
+      data.forEach((fileId, fileNotifications) {
+        if (fileNotifications is Map<dynamic, dynamic>) {
+          fileNotifications.forEach((adminName, notificationDetails) {
+            if (notificationDetails is Map<dynamic, dynamic> && adminName == widget.fullName) {
+              _notificationsRef.child(fileId).child(adminName).update({'isRead': true});
+            }
+          });
+        }
+      });
+      _loadUnreadNotificationsCount(); // Làm mới số lượng thông báo chưa đọc
+    }
   }
 
   Widget _buildHomeScreen() {
