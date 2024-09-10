@@ -3,10 +3,16 @@ import 'package:firebase_core/firebase_core.dart';
 import 'home/home_screen.dart';
 import 'login/login_screen.dart'; // Import màn hình đăng nhập
 import 'login/register_screen.dart'; // Import màn hình đăng ký
+import 'package:firebase_messaging/firebase_messaging.dart';
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print('Handling a background message: ${message.messageId}');
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   runApp(const MyApp());
 }
 
