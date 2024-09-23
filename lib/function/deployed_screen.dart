@@ -206,7 +206,7 @@ class _DeployedScreenState extends State<DeployedScreen> {
                   });
                   await FirebaseDatabase.instance.ref().child('notifications').child(widget.fileId).update({
                     widget.createdName:{
-                      'message': 'Hồ sơ ${widget.name} vừa được kiểm tra bởi ${widget.stamperName} vào ngày $deployedTime',
+                      'message': 'Hồ sơ ${widget.name} vừa được kiểm tra bởi ${widget.stamperName} vào $deployedTime',
                       'isRead': false,
                     }
                   });

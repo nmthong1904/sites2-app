@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart'; // Package này giúp định dạng ngày giờ
 import 'package:sites2app/home/notification_screen.dart';
 import '../function/detail_screen.dart';
+import '../main.dart';
 import 'add_newfile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -30,6 +32,26 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadUnreadNotificationsCount(); // Thêm dòng này
   }
 
+  Future<void> _sendLocalNotification(String title, String body) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+    AndroidNotificationDetails(
+        'your_channel_id',
+        'your_channel_name',
+        icon: '@mipmap/ic_launcher',  // Specify the icon resource here
+        importance: Importance.max,
+        priority: Priority.high
+    );
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+    );
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      title,
+      body,
+      platformChannelSpecifics,
+    );
+  }
+
   Future<void> _loadUnreadNotificationsCount() async {
     _notificationsRef.onValue.listen((event) {
       final data = event.snapshot.value as Map<dynamic, dynamic>?;
@@ -38,15 +60,44 @@ class _HomeScreenState extends State<HomeScreen> {
         data.forEach((fileId, fileNotifications) {
           if (fileNotifications is Map<dynamic, dynamic>) {
             fileNotifications.forEach((adminName, notificationDetails) {
-              if (notificationDetails is Map<dynamic, dynamic> && adminName == widget.fullName && notificationDetails['isRead'] == false) {
+              // Kiểm tra nếu adminName trùng với widget.fullName và isRead là false
+              if (notificationDetails is Map<dynamic, dynamic> &&
+                  adminName == widget.fullName &&
+                  notificationDetails['isRead'] == false) {
                 count++;
               }
             });
           }
         });
+
         setState(() {
           _unreadNotificationsCount = count;
         });
+
+        // Nếu có thông báo chưa đọc và adminName trùng với widget.fullName thì gửi thông báo
+        if (_unreadNotificationsCount > 0 ) {
+          if (widget.author == 'user') {
+            _sendLocalNotification(
+              'Bạn có thông báo mới',
+              'Có $_unreadNotificationsCount thông báo chưa đọc.',
+            );
+          } else if (widget.author == 'admin') {
+            _sendLocalNotification(
+              'Bạn có thông báo mới',
+              'Có $_unreadNotificationsCount hồ sơ trình ký.',
+            );
+          } else if (widget.author == 'manager') {
+            _sendLocalNotification(
+              'Bạn có thông báo mới',
+              'Có $_unreadNotificationsCount hồ sơ cần được kiểm duyệt.',
+            );
+          } else if (widget.author == 'stamper') {
+            _sendLocalNotification(
+              'Bạn có thông báo mới',
+              'Có $_unreadNotificationsCount hồ sơ cần được đóng dấu.',
+            );
+          }
+        }
       }
     });
   }

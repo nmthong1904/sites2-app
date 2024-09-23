@@ -152,12 +152,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
               decoration: const InputDecoration(labelText: 'Nhập lại mật khẩu'),
               obscureText: true,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 80),
             ElevatedButton(
               onPressed: _register,
-              child: const Text('Đăng Ký'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 15),
+                backgroundColor: Colors.blue[800],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                minimumSize: const Size(350, 50), // Cố định độ dài của nút
+              ),
+              child: const Text(
+                'Đăng Ký',
+                style: TextStyle(color: Colors.white), // Màu chữ trắng
+              ),
             ),
-            TextButton(
+            const SizedBox(height: 10),
+            ElevatedButton(
               onPressed: () {
                 Navigator.pushNamedAndRemoveUntil(
                   context,
@@ -165,7 +177,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       (route) => false, // Xóa tất cả các màn hình hiện tại
                 );
               },
-              child: const Text('Đã có tài khoản? Đăng nhập'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 15),
+                backgroundColor: Colors.blue[800],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                minimumSize: const Size(350, 50), // Cố định độ dài của nút
+              ),
+              child: const Text(
+                'Đăng nhập',
+                style: TextStyle(color: Colors.white), // Màu chữ trắng
+              ),
             ),
           ],
         ),

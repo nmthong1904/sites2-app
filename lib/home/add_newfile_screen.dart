@@ -48,9 +48,9 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
         FocusScope.of(context).unfocus();
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Thêm hồ sơ mới'),
-        ),
+        // appBar: AppBar(
+        //   title: const Text('Thêm hồ sơ mới'),
+        // ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -107,7 +107,7 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
               const SizedBox(height: 15),
               ElevatedButton(
                 onPressed: _saveData,
-                child: const Text('Lưu hồ sơ'),
+                child: const Text('Tạo hồ sơ'),
               ),
             ],
           ),
@@ -305,7 +305,7 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
 
     final Map<String, dynamic> notificationData = {
       adminName:{
-        'message': 'Có hồ sơ $title mới được trình ký bởi $nameCreated vào ngày $datetime',
+        'message': 'Có hồ sơ $title mới được trình ký bởi $nameCreated vào $datetime',
         'isRead': false,
       }
     };

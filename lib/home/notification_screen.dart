@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+// import 'package:firebase_messaging/firebase_messaging.dart';
 
 class NotificationScreen extends StatefulWidget {
   final String fullName;
@@ -20,27 +20,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   @override
   void initState() {
     super.initState();
-    _requestNotificationPermission();
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('A new onMessage event was published!');
-      // Xử lý thông báo đến khi ứng dụng đang hoạt động
-    });
     _loadNotifications();
-  }
-  void _requestNotificationPermission() async {
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
-    NotificationSettings settings = await messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('User granted permission');
-    } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
-      print('User granted provisional permission');
-    } else {
-      print('User declined or has not accepted permission');
-    }
   }
 
   Future<void> _loadNotifications() async {
@@ -77,9 +57,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Thông Báo'),
-      ),
+      // appBar: AppBar(
+      //   title: const Text('Thông Báo'),
+      // ),
       body: ListView.builder(
         itemCount: _notifications.length,
         itemBuilder: (context, index) {

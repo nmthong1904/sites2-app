@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-
-
 import '/home/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -48,9 +45,6 @@ class _LoginScreenState extends State<LoginScreen> {
         String author = userData['author'] ?? 'user'; // Sử dụng giá trị gốc 'author'
         String userId = result.docs.first.id; // Lấy userId (Document ID)
 
-        // Lưu FCM Token
-        await _saveFCMToken(userId);
-
         // Đăng nhập thành công
         Fluttertoast.showToast(
           msg: "Đăng nhập thành công!",
@@ -87,21 +81,6 @@ class _LoginScreenState extends State<LoginScreen> {
         textColor: Colors.white,
       );
       print(e.toString());
-    }
-  }
-  // Hàm lưu FCM Token vào Firestore
-  Future<void> _saveFCMToken(String userId) async {
-    String? token = await FirebaseMessaging.instance.getToken();
-    if (token != null) {
-      // Lưu token dưới đường dẫn users/userId/token
-      await FirebaseFirestore.instance.collection('users').doc(userId).update({
-        'token': token,
-      }).catchError((error) async {
-        // Nếu không tồn tại document, tạo mới
-        await FirebaseFirestore.instance.collection('users').doc(userId).set({
-          'token': token,
-        });
-      });
     }
   }
 

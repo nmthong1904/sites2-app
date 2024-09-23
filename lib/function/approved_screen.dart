@@ -207,7 +207,7 @@ class _ApproveScreenState extends State<ApproveScreen> {
                   // Cập nhật vào Firebase Realtime Database notifications
                   await FirebaseDatabase.instance.ref().child('notifications').child(widget.fileId).update({
                     widget.createdName:{
-                      'message': 'Hồ sơ ${widget.name} vừa được ký bởi ${widget.approvedName} vào ngày $approvedTime',
+                      'message': 'Hồ sơ ${widget.name} vừa được ký bởi ${widget.approvedName} vào $approvedTime',
                       'isRead': false,
                     }
                   });

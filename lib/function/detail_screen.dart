@@ -86,7 +86,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         text: const TextSpan(
           children: <TextSpan>[
             TextSpan(
-              text: 'Hồ sơ trình ký hoàn chỉnh',
+              text: 'Hồ sơ trình ký hoàn chỉnh\n',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -141,7 +141,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         text: const TextSpan(
           children: <TextSpan>[
             TextSpan(
-              text: 'Hồ sơ kiểm tra hoàn chỉnh',
+              text: 'Hồ sơ kiểm tra hoàn chỉnh\n',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
