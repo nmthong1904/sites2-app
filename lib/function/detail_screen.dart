@@ -181,6 +181,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Chi tiết hồ sơ'),
+        centerTitle: true, // Đảm bảo tiêu đề nằm giữa AppBar
         actions: widget.author == 'user'
             ? [
           Padding(
@@ -392,75 +393,118 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     const WidgetSpan(
                       child: SizedBox(height: 28), // Thêm khoảng cách giữa các phần
                     ),
-                    getDeployedStatus(widget.originalFiles, widget.approvedFiles).text, // TextSpan từ RichText
+                    getDeployedStatus(widget.originalFiles, widget.deployedFiles).text, // TextSpan từ RichText
                   ],
                 ),
               ),
             ],
-            // Hiển thị các nút hành động tùy theo vai trò của author
-            if (widget.author == 'admin') ...[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      _navigateToApproveScreen(context);
-                    },
-                    child: const Text('Phê duyệt hồ sơ'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      // Xử lý từ chối hồ sơ
-                    },
-                    child: const Text('Từ chối hồ sơ'),
-                  ),
-                ],
-              ),
-            ] else if (widget.author == 'manager') ...[
-              Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Xử lý logic hoàn thành soát xét
-                    _navigateToDeployScreen(context);
-                  },
-                  child: const Text('Kiểm tra hồ sơ'),
+            const SizedBox(height: 10),
+            Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center, // Căn giữa theo chiều dọc
+                  crossAxisAlignment: CrossAxisAlignment.center, // Căn giữa theo chiều ngang
+                  children: [
+                    // Hiển thị các nút hành động tùy theo vai trò của author
+                    if (widget.author == 'admin' && widget.status == 'pending') ...[
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center, // Căn giữa các nút hành động
+                        children: [
+                          ElevatedButton(
+                            onPressed: () {
+                              _navigateToApproveScreen(context);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 15),
+                              backgroundColor: Colors.blue[800],
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              minimumSize: const Size(300, 50),
+                            ),
+                            child: const Text(
+                              'Phê duyệt hồ sơ',
+                              style: TextStyle(color: Colors.white), // Màu chữ trắng
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          ElevatedButton(
+                            onPressed: () {
+                              // Xử lý từ chối hồ sơ
+                            },
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 15),
+                              backgroundColor: Colors.blue[800],
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              minimumSize: const Size(300, 50),
+                            ),
+                            child: const Text(
+                              'Từ chối hồ sơ',
+                              style: TextStyle(color: Colors.white), // Màu chữ trắng
+                            ),
+                          ),
+                        ],
+                      ),
+                    ] else if (widget.author == 'manager'  && widget.status == 'approved') ...[
+                      ElevatedButton(
+                        onPressed: () {
+                          _navigateToDeployScreen(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          backgroundColor: Colors.blue[800],
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          minimumSize: const Size(300, 50),
+                        ),
+                        child: const Text(
+                          'Kiểm tra hồ sơ',
+                          style: TextStyle(color: Colors.white), // Màu chữ trắng
+                        ),
+                      ),
+                    ] else if (widget.author == 'stamper'  && widget.status == 'deployed') ...[
+                      ElevatedButton(
+                        onPressed: () async {
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (BuildContext context) {
+                              return const ProcessingdialogScreen();
+                            },
+                          );
+                          final stamperTime = DateFormat('HH:mm dd/MM/yyyy').format(DateTime.now());
+                          await FirebaseDatabase.instance.ref().child('files').child(widget.fileId).update({
+                            'stampertime': stamperTime,
+                            'status': 'finished'
+                          });
+                          await FirebaseDatabase.instance.ref().child('notifications').child(widget.fileId).update({
+                            widget.nameCreated: {
+                              'message': 'Hồ sơ ${widget.name} của ${widget.nameCreated} đã được đóng dấu vào $stamperTime',
+                              'isRead': false,
+                            }
+                          });
+                          await Future.delayed(const Duration(seconds: 2));
+                          Navigator.of(context).popUntil((route) => route.isFirst);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          backgroundColor: Colors.blue[800],
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          minimumSize: const Size(300, 50),
+                        ),
+                        child: const Text(
+                          'Đóng Dấu Hồ Sơ',
+                          style: TextStyle(color: Colors.white), // Màu chữ trắng
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
-            ] else if (widget.author == 'stamper') ...[
-              Center(
-                child: ElevatedButton(
-                  onPressed: () async {
-                    // Hiển thị màn hình xử lý
-                    showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (BuildContext context) {
-                        return const ProcessingdialogScreen();
-                      },
-                    );
-                    final stamperTime = DateFormat('HH:mm dd/MM/yyyy').format(DateTime.now());
-                    // Xử lý logic đóng dấu
-                    await FirebaseDatabase.instance.ref().child('files').child(widget.fileId).update({
-                      'stampertime': stamperTime,
-                      'status':'finished'
-                    });
-                    // Cập nhật vào Firebase Realtime Database notifications
-                    await FirebaseDatabase.instance.ref().child('notifications').child(widget.fileId).update({
-                      widget.nameCreated:{
-                        'message': 'Hồ sơ ${widget.name} của ${widget.nameCreated} đã được dóng dấu vào $stamperTime',
-                        'isRead': false,
-                      }
-                    });
-                    // Đợi 2 giây
-                    await Future.delayed(const Duration(seconds: 2));
-
-                    // Điều hướng trở về HomeScreen
-                    Navigator.of(context).popUntil((route) => route.isFirst);
-                  },
-                  child: const Text('Đóng Dấu Hồ Sơ'),
-                ),
-              ),
-            ],
           ],
         ),
       ),

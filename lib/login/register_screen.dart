@@ -20,6 +20,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
+  @override
+  void dispose() {
+    // Đảm bảo giải phóng tài nguyên khi widget bị hủy
+    _fullNameController.dispose();
+    _phoneController.dispose();
+    _usernameController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
   Future<void> _register() async {
     String fullName = _fullNameController.text;
     String phone = _phoneController.text;
@@ -114,6 +125,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Đăng Ký'),
+        centerTitle: true, // Đảm bảo tiêu đề nằm giữa AppBar
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -125,34 +137,139 @@ class _RegisterScreenState extends State<RegisterScreen> {
           },
         ),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            // Thêm ImageView tại đây
+            Image.asset(
+              'assets/images/logonew.png', // Đường dẫn tới ảnh của bạn
+              height: 60, // Chiều cao của ảnh
+              fit: BoxFit.cover, // Cách hiển thị ảnh
+            ),
+            const SizedBox(height: 15), // Khoảng cách giữa ảnh và TextField
             TextField(
               controller: _fullNameController,
-              decoration: const InputDecoration(labelText: 'Họ và tên'),
+              decoration: InputDecoration(
+                labelText: 'Họ và tên',
+                labelStyle: const TextStyle(color: Colors.blue),
+                filled: true,
+                fillColor: Colors.blue[50],
+                contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide(color: Colors.blue[800]!),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide(color: Colors.blue[800]!),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: const BorderSide(color: Colors.blue, width: 2),
+                ),
+              ),
+              style: const TextStyle(color: Colors.black),
             ),
+            const SizedBox(height: 15),
             TextField(
               controller: _phoneController,
-              decoration: const InputDecoration(labelText: 'Số điện thoại'),
-              keyboardType: TextInputType.phone,
+              decoration: InputDecoration(
+                labelText: 'Số điện thoại',
+                labelStyle: const TextStyle(color: Colors.blue),
+                filled: true,
+                fillColor: Colors.blue[50],
+                contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide(color: Colors.blue[800]!),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide(color: Colors.blue[800]!),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: const BorderSide(color: Colors.blue, width: 2),
+                ),
+              ),
+              style: const TextStyle(color: Colors.black),
             ),
+            const SizedBox(height: 15),
             TextField(
               controller: _usernameController,
-              decoration: const InputDecoration(labelText: 'Tên người dùng'),
+              decoration: InputDecoration(
+                labelText: 'Tên đăng nhập',
+                labelStyle: const TextStyle(color: Colors.blue),
+                filled: true,
+                fillColor: Colors.blue[50],
+                contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide(color: Colors.blue[800]!),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide(color: Colors.blue[800]!),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: const BorderSide(color: Colors.blue, width: 2),
+                ),
+              ),
+              style: const TextStyle(color: Colors.black),
             ),
+            const SizedBox(height: 15),
             TextField(
               controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Mật khẩu'),
-              obscureText: true,
+              decoration: InputDecoration(
+                labelText: 'Mật khẩu',
+                labelStyle: const TextStyle(color: Colors.blue),
+                filled: true,
+                fillColor: Colors.blue[50],
+                contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide(color: Colors.blue[800]!),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide(color: Colors.blue[800]!),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: const BorderSide(color: Colors.blue, width: 2),
+                ),
+              ),
+              style: const TextStyle(color: Colors.black),
+              obscureText: true, // Ẩn mật khẩu
             ),
+            const SizedBox(height: 15),
             TextField(
               controller: _confirmPasswordController,
-              decoration: const InputDecoration(labelText: 'Nhập lại mật khẩu'),
-              obscureText: true,
+              decoration: InputDecoration(
+                labelText: 'Xác nhận mật khẩu',
+                labelStyle: const TextStyle(color: Colors.blue),
+                filled: true,
+                fillColor: Colors.blue[50],
+                contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide(color: Colors.blue[800]!),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide(color: Colors.blue[800]!),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: const BorderSide(color: Colors.blue, width: 2),
+                ),
+              ),
+              style: const TextStyle(color: Colors.black),
+              obscureText: true, // Ẩn mật khẩu
             ),
-            const SizedBox(height: 80),
+            const SizedBox(height:25),
             ElevatedButton(
               onPressed: _register,
               style: ElevatedButton.styleFrom(
@@ -161,33 +278,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
-                minimumSize: const Size(350, 50), // Cố định độ dài của nút
+                minimumSize: const Size(300, 50),
               ),
               child: const Text(
                 'Đăng Ký',
-                style: TextStyle(color: Colors.white), // Màu chữ trắng
+                style: TextStyle(color: Colors.white),
               ),
             ),
-            const SizedBox(height: 10),
-            ElevatedButton(
+            TextButton(
               onPressed: () {
                 Navigator.pushNamedAndRemoveUntil(
                   context,
                   '/login',
-                      (route) => false, // Xóa tất cả các màn hình hiện tại
+                      (route) => false,
                 );
               },
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                backgroundColor: Colors.blue[800],
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                minimumSize: const Size(350, 50), // Cố định độ dài của nút
-              ),
               child: const Text(
-                'Đăng nhập',
-                style: TextStyle(color: Colors.white), // Màu chữ trắng
+                'Đã có tài khoản.Đăng nhập',
               ),
             ),
           ],

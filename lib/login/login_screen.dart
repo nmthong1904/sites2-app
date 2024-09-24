@@ -89,19 +89,63 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Đăng Nhập'),
+        centerTitle: true, // Đảm bảo tiêu đề nằm giữa AppBar
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            // Thêm ImageView tại đây
+            Image.asset(
+              'assets/images/logonew.png', // Đường dẫn tới ảnh của bạn
+              height: 60, // Chiều cao của ảnh
+              fit: BoxFit.cover, // Cách hiển thị ảnh
+            ),
+            const SizedBox(height: 15), // Khoảng cách giữa ảnh và TextField
             TextField(
               controller: _usernameController,
-              decoration: const InputDecoration(labelText: 'Tên người dùng'),
+              decoration: InputDecoration(
+                labelText: 'Tên đăng nhập',
+                labelStyle: const TextStyle(color: Colors.blue),
+                filled: true,
+                fillColor: Colors.blue[50],
+                contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide(color: Colors.blue[800]!),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide(color: Colors.blue[800]!),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: const BorderSide(color: Colors.blue, width: 2),
+                ),
+              ),
+              style: const TextStyle(color: Colors.black),
             ),
+            const SizedBox(height: 15),
             TextField(
               controller: _passwordController,
               decoration: InputDecoration(
                 labelText: 'Mật khẩu',
+                labelStyle: const TextStyle(color: Colors.blue),
+                filled: true,
+                fillColor: Colors.blue[50],
+                contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide(color: Colors.blue[800]!),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: BorderSide(color: Colors.blue[800]!),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: const BorderSide(color: Colors.blue, width: 2),
+                ),
                 suffixIcon: IconButton(
                   icon: Icon(
                     _obscurePassword ? Icons.visibility : Icons.visibility_off,
@@ -114,11 +158,23 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               obscureText: _obscurePassword, // Hiển thị hoặc ẩn mật khẩu dựa trên trạng thái
+              style: const TextStyle(color: Colors.black),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 15),
             ElevatedButton(
-              onPressed: _login,
-              child: const Text('Đăng Nhập'),
+              onPressed:_login,
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 15),
+                backgroundColor: Colors.blue[800],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                minimumSize: const Size(300, 50),
+              ),
+              child: const Text(
+                'Đăng nhập',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
             TextButton(
               onPressed: () {

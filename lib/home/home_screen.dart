@@ -175,49 +175,66 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      appBar: _currentIndex == 0
+          ? AppBar(
+        title: Stack(
           children: [
-            PopupMenuButton<String>(
-              onSelected: _changeSort,
-              itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: 'title',
-                  child: Text('Tiêu đề: A->Z'),
-                ),
-                const PopupMenuItem(
-                  value: 'createdtime',
-                  child: Text('Mới nhất'),
-                ),
-              ],
-              icon: const Icon(Icons.sort),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: PopupMenuButton<String>(
+                onSelected: _changeSort,
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'title',
+                    child: Text('Tiêu đề: A->Z'),
+                  ),
+                  const PopupMenuItem(
+                    value: 'createdtime',
+                    child: Text('Mới nhất'),
+                  ),
+                ],
+                icon: const Icon(Icons.sort),
+              ),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(widget.fullName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                Text(_getAuthorDescription(widget.author), style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic)),
-              ],
+            Center(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    widget.fullName,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    _getAuthorDescription(widget.author),
+                    style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+                  ),
+                ],
+              ),
             ),
-            IconButton(
-              icon: const Icon(Icons.logout),
-              onPressed: () {
-                _logout(context);
-              },
+            Align(
+              alignment: Alignment.centerRight,
+              child: IconButton(
+                icon: const Icon(Icons.logout),
+                onPressed: () {
+                  _logout(context);
+                },
+              ),
             ),
           ],
         ),
-      ),
+      )
+          : null, // Không hiển thị AppBar khi không phải trang chủ
+
       body: IndexedStack(
         index: _currentIndex,
         children: [
           _buildHomeScreen(),
           AddNewFileScreen(fullName: widget.fullName, author: widget.author),
-          NotificationScreen(fullName: widget.fullName,author: widget.author),
+          NotificationScreen(fullName: widget.fullName, author: widget.author),
           const Center(child: Text('Tài khoản')),
         ],
       ),
+
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) async {
@@ -270,6 +287,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
   Future<void> _markAllNotificationsAsRead() async {
     final data = (await _notificationsRef.once()).snapshot.value as Map<dynamic, dynamic>?;
     if (data != null) {
@@ -416,7 +434,7 @@ class _HomeScreenState extends State<HomeScreen> {
       case 'pending':
         return 'Đang chờ phê duyệt';
       case 'approved':
-        return 'Đang chờ soát xét';
+        return 'Đang chờ kiểm tra';
       case 'deployed':
         return 'Đang chờ đóng dấu';
       case 'finished':

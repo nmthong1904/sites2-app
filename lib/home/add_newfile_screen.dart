@@ -48,9 +48,10 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
         FocusScope.of(context).unfocus();
       },
       child: Scaffold(
-        // appBar: AppBar(
-        //   title: const Text('Thêm hồ sơ mới'),
-        // ),
+        appBar: AppBar(
+          title: const Text('Tạo hồ sơ trình ký'),
+          centerTitle: true, // Đảm bảo tiêu đề nằm giữa AppBar
+        ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -59,24 +60,60 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
               // TextFields for "Tên hồ sơ" and "Mô tả"
               TextField(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Tên hồ sơ'),
+                decoration: InputDecoration(
+                  labelText: 'Tiêu đề',
+                  labelStyle: const TextStyle(color: Colors.blue),
+                  filled: true,
+                  fillColor: Colors.blue[50],
+                  contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide(color: Colors.blue[800]!),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide(color: Colors.blue[800]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: const BorderSide(color: Colors.blue, width: 2),
+                  ),
+                ),
+                style: const TextStyle(color: Colors.black),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 15),
               TextField(
                 controller: _descriptionController,
-                decoration: const InputDecoration(labelText: 'Mô tả'),
+                decoration: InputDecoration(
+                  labelText: 'Mô tả',
+                  labelStyle: const TextStyle(color: Colors.blue),
+                  filled: true,
+                  fillColor: Colors.blue[50],
+                  contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide(color: Colors.blue[800]!),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide(color: Colors.blue[800]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: const BorderSide(color: Colors.blue, width: 2),
+                  ),
+                ),
+                style: const TextStyle(color: Colors.black),
               ),
-              const SizedBox(height: 16),
               TextButton(
                 onPressed: () => _selectAdmin(context),
                 child: Text(
                   _selectedAdminName.isEmpty
-                      ? 'Chọn người duyệt'
-                      : 'Người duyệt: $_selectedAdminName',
+                      ? 'Chọn người trình ký hồ sơ'
+                      : 'Người trình ký: $_selectedAdminName',
                   style: const TextStyle(color: Colors.blue),
                 ),
               ),
-              const SizedBox(height: 15),
               ...List.generate(10, (index) {
                 return Row(
                   children: [
@@ -104,10 +141,23 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
                   ],
                 );
               }),
-              const SizedBox(height: 15),
-              ElevatedButton(
-                onPressed: _saveData,
-                child: const Text('Tạo hồ sơ'),
+              const SizedBox(height: 10),
+              Center(
+                child: ElevatedButton(
+                  onPressed: _saveData,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    backgroundColor: Colors.blue[800],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    minimumSize: const Size(350, 50), // Cố định độ dài của nút
+                  ),
+                  child: const Text(
+                    'Tạo hồ sơ',
+                    style: TextStyle(color: Colors.white), // Màu chữ trắng
+                  ),
+                ),
               ),
             ],
           ),
@@ -131,7 +181,7 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setStateDialog) {
             return AlertDialog(
-              title: const Text('Chọn người duyệt'),
+              title: const Text('Chọn người trình ký'),
               content: SizedBox(
                 width: double.maxFinite,
                 child: ListView.builder(
@@ -207,7 +257,7 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
 
     if (_selectedAdmin == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng chọn người duyệt hồ sơ')),
+        const SnackBar(content: Text('Vui lòng chọn người trình ký hồ sơ')),
       );
       return;
     }

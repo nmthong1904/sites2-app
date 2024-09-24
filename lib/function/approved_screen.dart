@@ -142,6 +142,7 @@ class _ApproveScreenState extends State<ApproveScreen> {
                           managerErrorMessage = null; // Xóa thông báo lỗi khi người dùng chọn người soát xét
                         });
                       },
+                      activeColor: Colors.blue, // Đổi màu của radio button khi được chọn
                     );
                   }).toList(),
                 );
@@ -157,6 +158,14 @@ class _ApproveScreenState extends State<ApproveScreen> {
             const SizedBox(height: 10),
             Center(
               child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  backgroundColor: Colors.blue[800],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  minimumSize: const Size(300, 50),
+                ),
                 onPressed: () async {
                   // Kiểm tra lỗi số lượng trước khi duyệt
                   if (errorMessages.isNotEmpty) {
@@ -200,7 +209,7 @@ class _ApproveScreenState extends State<ApproveScreen> {
                   // Cập nhật vào Firebase Realtime Database notifications
                   await FirebaseDatabase.instance.ref().child('notifications').child(widget.fileId).update({
                     _selectedManagerName:{
-                        'message': 'Có hồ sơ ${widget.name} của ${widget.createdName} cần được kiểm tra',
+                        'message': 'Có hồ sơ ${widget.name} của ${widget.createdName} cần được kiểm tra vào $approvedTime',
                         'isRead': false,
                     }
                   });
@@ -218,7 +227,10 @@ class _ApproveScreenState extends State<ApproveScreen> {
                   // Điều hướng trở về HomeScreen
                   Navigator.of(context).popUntil((route) => route.isFirst);
                 },
-                child: const Text('Duyệt Hồ Sơ'),
+                child: const Text(
+                  'Duyệt Hồ Sơ',
+                  style: TextStyle(color: Colors.white), // Màu chữ trắng
+                ),
               ),
             ),
           ],
