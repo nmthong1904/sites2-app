@@ -108,7 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 labelText: 'Tên đăng nhập',
                 labelStyle: const TextStyle(color: Colors.blue),
                 filled: true,
-                fillColor: Colors.blue[50],
+                fillColor: Colors.transparent,
                 contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
@@ -132,7 +132,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 labelText: 'Mật khẩu',
                 labelStyle: const TextStyle(color: Colors.blue),
                 filled: true,
-                fillColor: Colors.blue[50],
+                fillColor: Colors.transparent,
                 contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
@@ -180,7 +180,10 @@ class _LoginScreenState extends State<LoginScreen> {
               onPressed: () {
                 Navigator.pushReplacementNamed(context, '/register');
               },
-              child: const Text('Chưa có tài khoản? Đăng ký'),
+              child: const Text(
+                'Chưa có tài khoản? Đăng ký',
+                  style: TextStyle(color: Colors.black),
+            ),
             ),
           ],
         ),

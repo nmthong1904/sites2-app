@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart'; // Package này giúp định dạng ngày giờ
 import 'package:sites2app/home/notification_screen.dart';
 import '../function/detail_screen.dart';
 import '../main.dart';
 import 'add_newfile_screen.dart';
+import 'dart:typed_data';
+import 'package:flutter/services.dart';
 
 class HomeScreen extends StatefulWidget {
   final String fullName;
@@ -25,11 +28,38 @@ class _HomeScreenState extends State<HomeScreen> {
   final DatabaseReference _notificationsRef = FirebaseDatabase.instance.ref().child('notifications');
   String _sortBy = 'title'; // Biến để theo dõi kiểu sắp xếp hiện tại
 
+  final ScrollController _scrollController = ScrollController();  // Thêm ScrollController
+  bool _isAppBarVisible = true;  // Quản lý trạng thái hiển thị AppBar và BottomNavigationBar
+
   @override
   void initState() {
     super.initState();
     _loadFiles();
     _loadUnreadNotificationsCount(); // Thêm dòng này
+    _scrollController.addListener(_scrollListener); // Lắng nghe sự kiện cuộn
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_scrollListener);  // Xóa listener khi widget bị dispose
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollListener() {
+    if (_scrollController.position.userScrollDirection == ScrollDirection.reverse) {
+      if (_isAppBarVisible) {
+        setState(() {
+          _isAppBarVisible = false; // Ẩn AppBar và BottomNavigationBar
+        });
+      }
+    } else if (_scrollController.position.userScrollDirection == ScrollDirection.forward) {
+      if (!_isAppBarVisible) {
+        setState(() {
+          _isAppBarVisible = true; // Hiển thị AppBar và BottomNavigationBar
+        });
+      }
+    }
   }
 
   Future<void> _sendLocalNotification(String title, String body) async {
@@ -37,7 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
     AndroidNotificationDetails(
         'your_channel_id',
         'your_channel_name',
-        icon: '@mipmap/ic_launcher',  // Specify the icon resource here
+        icon: '@mipmap/logo',  // Specify the icon resource here
         importance: Importance.max,
         priority: Priority.high
     );
@@ -118,11 +148,11 @@ class _HomeScreenState extends State<HomeScreen> {
         if (widget.author == 'user') {
           files = files.where((file) => file['createdName'] == widget.fullName).toList();
         } else if (widget.author == 'admin') {
-          files = files.where((file) => file['approvedName'] == widget.fullName).toList();
+          files = files.where((file) => file['approvedName'] == widget.fullName && file['status'] == 'pending').toList();
         } else if (widget.author == 'manager') {
-          files = files.where((file) => file['deployedName'] == widget.fullName).toList();
+          files = files.where((file) => file['deployedName'] == widget.fullName && file['status'] == 'approved').toList();
         } else if (widget.author == 'stamper') {
-          files = files.where((file) => file['stamperName'] == widget.fullName).toList();
+          files = files.where((file) => file['stamperName'] == widget.fullName && file['status'] == 'deployed').toList();
         }
 
         setState(() {
@@ -175,55 +205,68 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _currentIndex == 0
-          ? AppBar(
-        title: Stack(
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: PopupMenuButton<String>(
-                onSelected: _changeSort,
-                itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    value: 'title',
-                    child: Text('Tiêu đề: A->Z'),
-                  ),
-                  const PopupMenuItem(
-                    value: 'createdtime',
-                    child: Text('Mới nhất'),
-                  ),
-                ],
-                icon: const Icon(Icons.sort),
+      appBar: _currentIndex == 0 && _isAppBarVisible
+          ? PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: Container(
+          decoration: const BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: Color(0x9DDCDCDC),
+                width: 1,
               ),
             ),
-            Center(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    widget.fullName,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          child: AppBar(
+            title: Stack(
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: PopupMenuButton<String>(
+                    onSelected: _changeSort,
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'title',
+                        child: Text('Tiêu đề: A->Z'),
+                      ),
+                      const PopupMenuItem(
+                        value: 'createdtime',
+                        child: Text('Mới nhất'),
+                      ),
+                    ],
+                    icon: const Icon(Icons.sort),
                   ),
-                  Text(
-                    _getAuthorDescription(widget.author),
-                    style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+                ),
+                Center(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        widget.fullName,
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        _getAuthorDescription(widget.author),
+                        style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: IconButton(
+                    icon: const Icon(Icons.logout),
+                    onPressed: () {
+                      _logout(context);
+                    },
+                  ),
+                ),
+              ],
             ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: IconButton(
-                icon: const Icon(Icons.logout),
-                onPressed: () {
-                  _logout(context);
-                },
-              ),
-            ),
-          ],
+          ),
         ),
       )
-          : null, // Không hiển thị AppBar khi không phải trang chủ
+          : null,
 
       body: IndexedStack(
         index: _currentIndex,
@@ -235,56 +278,68 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
 
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) async {
-          if (index == 2) { // Tab thông báo
-            await _markAllNotificationsAsRead();
-          }
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        iconSize: 35,
-        items: [
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Trang chủ',
+      bottomNavigationBar: _isAppBarVisible
+          ? Container(
+        decoration: const BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: Color(0x9DDCDCDC),
+              width: 1,
+            ),
           ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.add_box),
-            label: 'Tạo hồ sơ',
-          ),
-          BottomNavigationBarItem(
-            icon: Stack(
-              children: [
-                const Icon(Icons.notifications),
-                if (_unreadNotificationsCount > 0)
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: CircleAvatar(
-                      radius: 10,
-                      backgroundColor: Colors.red,
-                      child: Text(
-                        '$_unreadNotificationsCount',
-                        style: const TextStyle(color: Colors.white, fontSize: 12),
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) async {
+            if (index == 2) {
+              await _markAllNotificationsAsRead();
+            }
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          iconSize: 35,
+          items: [
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Trang chủ',
+            ),
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.add_box),
+              label: 'Tạo hồ sơ',
+            ),
+            BottomNavigationBarItem(
+              icon: Stack(
+                children: [
+                  const Icon(Icons.notifications),
+                  if (_unreadNotificationsCount > 0)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: CircleAvatar(
+                        radius: 10,
+                        backgroundColor: Colors.red,
+                        child: Text(
+                          '$_unreadNotificationsCount',
+                          style: const TextStyle(color: Colors.white, fontSize: 12),
+                        ),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
+              label: 'Thông báo',
             ),
-            label: 'Thông báo',
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.account_circle),
-            label: 'Tài khoản',
-          ),
-        ],
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        showUnselectedLabels: true,
-      ),
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.account_circle),
+              label: 'Tài khoản',
+            ),
+          ],
+          selectedItemColor: Colors.blue,
+          unselectedItemColor: Colors.grey,
+          showUnselectedLabels: true,
+        ),
+      )
+          : null,
     );
   }
 
@@ -306,6 +361,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildHomeScreen() {
     return ListView.builder(
+      controller: _scrollController, // Thêm controller vào đây
       itemCount: _files.length,
       itemBuilder: (context, index) {
         final file = _files[index];
@@ -432,7 +488,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String _getStatusText(String status) {
     switch (status) {
       case 'pending':
-        return 'Đang chờ phê duyệt';
+        return 'Đang chờ trình ký';
       case 'approved':
         return 'Đang chờ kiểm tra';
       case 'deployed':

@@ -154,7 +154,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 labelText: 'Họ và tên',
                 labelStyle: const TextStyle(color: Colors.blue),
                 filled: true,
-                fillColor: Colors.blue[50],
+                fillColor: Colors.transparent,
                 contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
@@ -178,7 +178,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 labelText: 'Số điện thoại',
                 labelStyle: const TextStyle(color: Colors.blue),
                 filled: true,
-                fillColor: Colors.blue[50],
+                fillColor: Colors.transparent,
                 contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
@@ -202,7 +202,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 labelText: 'Tên đăng nhập',
                 labelStyle: const TextStyle(color: Colors.blue),
                 filled: true,
-                fillColor: Colors.blue[50],
+                fillColor: Colors.transparent,
                 contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
@@ -226,7 +226,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 labelText: 'Mật khẩu',
                 labelStyle: const TextStyle(color: Colors.blue),
                 filled: true,
-                fillColor: Colors.blue[50],
+                fillColor: Colors.transparent,
                 contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
@@ -251,7 +251,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 labelText: 'Xác nhận mật khẩu',
                 labelStyle: const TextStyle(color: Colors.blue),
                 filled: true,
-                fillColor: Colors.blue[50],
+                fillColor: Colors.transparent,
                 contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
@@ -295,6 +295,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               },
               child: const Text(
                 'Đã có tài khoản.Đăng nhập',
+                style: TextStyle(color: Colors.black),
               ),
             ),
           ],

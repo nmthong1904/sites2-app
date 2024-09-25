@@ -64,7 +64,7 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
                   labelText: 'Tiêu đề',
                   labelStyle: const TextStyle(color: Colors.blue),
                   filled: true,
-                  fillColor: Colors.blue[50],
+                  fillColor: Colors.transparent,
                   contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
@@ -88,7 +88,7 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
                   labelText: 'Mô tả',
                   labelStyle: const TextStyle(color: Colors.blue),
                   filled: true,
-                  fillColor: Colors.blue[50],
+                  fillColor: Colors.transparent,
                   contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
@@ -105,6 +105,7 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
                 ),
                 style: const TextStyle(color: Colors.black),
               ),
+              const SizedBox(height: 15),
               TextButton(
                 onPressed: () => _selectAdmin(context),
                 child: Text(
@@ -129,13 +130,32 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
                       child: Text(_checkboxLabels[index]),
                     ),
                     if (_isCheckboxChecked[index])
-                      Expanded(
-                        child: TextField(
-                          controller: _textControllers[index],
-                          decoration: const InputDecoration(
-                            labelText: 'Số lượng biên bản',
+                      Flexible(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 10.0), // Cách 5dp từ phía trên
+                          child: TextField(
+                            controller: _textControllers[index],
+                            decoration: InputDecoration(
+                              labelText: 'Số lượng biên bản',
+                              labelStyle: const TextStyle(
+                                color: Colors.blue,
+                                fontSize: 14, // Điều chỉnh kích thước text của label
+                              ),
+                              filled: true,
+                              fillColor: Colors.transparent,
+                              border: OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.blue[800]!),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.blue[800]!),
+                              ),
+                              focusedBorder: const OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.blue, width: 1),
+                              ),
+                            ),
+                            keyboardType: TextInputType.number,
+                            style: const TextStyle(color: Colors.black),
                           ),
-                          keyboardType: TextInputType.number,
                         ),
                       ),
                   ],
