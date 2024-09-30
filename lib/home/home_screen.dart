@@ -257,7 +257,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: IconButton(
                     icon: const Icon(Icons.logout),
                     onPressed: () {
-                      _logout(context);
+                      Navigator.pushReplacementNamed(context, '/login');
                     },
                   ),
                 ),
@@ -360,116 +360,125 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHomeScreen() {
-    return ListView.builder(
-      controller: _scrollController, // Thêm controller vào đây
-      itemCount: _files.length,
-      itemBuilder: (context, index) {
-        final file = _files[index];
-        final originalFiles = (file['original files'] as Map<dynamic, dynamic>?)?.cast<String, String?>() ?? {};
-        final approvedFiles = (file['approvedFiles'] as Map<dynamic, dynamic>?)?.cast<String, String?>() ?? {};
-        final deployedFiles = (file['deployedFiles'] as Map<dynamic, dynamic>?)?.cast<String, String?>() ?? {};
+    return Padding(
+      padding: const EdgeInsets.only(top: 6.0), // Thêm khoảng cách 10dp từ trên
+      child: ListView.builder(
+        controller: _scrollController, // Thêm controller vào đây
+        itemCount: _files.length,
+        itemBuilder: (context, index) {
+          final file = _files[index];
+          final originalFiles = (file['original files'] as Map<dynamic, dynamic>?)?.cast<String, String?>() ?? {};
+          final approvedFiles = (file['approvedFiles'] as Map<dynamic, dynamic>?)?.cast<String, String?>() ?? {};
+          final deployedFiles = (file['deployedFiles'] as Map<dynamic, dynamic>?)?.cast<String, String?>() ?? {};
 
-        return ListTile(
-          title: RichText(
-            text: TextSpan(
-              children: <TextSpan>[
-                const TextSpan(
-                  text: 'Tiêu đề: ',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.black,height: 1.5),
+          return Card( // Thêm Card để tạo hiệu ứng bóng
+            margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 16), // Thêm margin
+            color: Colors.white54,
+            child: ListTile(
+              contentPadding: const EdgeInsets.all(16), // Thêm padding cho ListTile
+              title: RichText(
+                text: TextSpan(
+                  children: <TextSpan>[
+                    const TextSpan(
+                      text: 'Tiêu đề: ',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black, height: 1.5),
+                    ),
+                    TextSpan(
+                      text: file['title'],
+                      style: const TextStyle(fontSize: 16, color: Colors.black, height: 1.5),
+                    ),
+                  ],
                 ),
-                TextSpan(
-                  text: file['title'],
-                  style: const TextStyle(fontSize: 16,color: Colors.black,height: 1.5),
-                ),
-              ],
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  RichText(
+                    text: TextSpan(
+                      children: <TextSpan>[
+                        const TextSpan(
+                          text: 'Trạng thái: ',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black, height: 1.5),
+                        ),
+                        TextSpan(
+                          text: _getStatusText(file['status']),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            height: 1.5,
+                            color: _getStatusColor(file['status']), // Thay đổi màu sắc dựa trên status
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  RichText(
+                    text: TextSpan(
+                      children: <TextSpan>[
+                        const TextSpan(
+                          text: 'Ngày tạo: ',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black, height: 1.5),
+                        ),
+                        TextSpan(
+                          text: file['createdtime'],
+                          style: const TextStyle(fontSize: 16, color: Colors.black, height: 1.5),
+                        ),
+                      ],
+                    ),
+                  ),
+                  RichText(
+                    text: TextSpan(
+                      children: <TextSpan>[
+                        const TextSpan(
+                          text: 'Người trình ký: ',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black, height: 1.5),
+                        ),
+                        TextSpan(
+                          text: file['createdName'],
+                          style: const TextStyle(fontSize: 16, color: Colors.black, height: 1.5),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              trailing: Icon(
+                Icons.circle,
+                color: _getStatusColor(file['status']),
+                size: 14.0, // Điều chỉnh kích thước của chấm
+              ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProductDetailScreen(
+                      name: file['title'] ?? 'Không có tên',
+                      description: file['description'] ?? 'Không có mô tả',
+                      status: file['status'] ?? 'Chưa xác định',
+                      datetime: file['createdtime'] ?? 'Chưa xác định',
+                      originalFiles: originalFiles,
+                      nameCreated: file['createdName'] ?? 'Không có thông tin',
+                      author: widget.author,
+                      fileId: file['id'], // Truyền fileId vào đây
+                      approvedFiles: approvedFiles, // Truyền approvedFiles
+                      approvedtime: file['approvedtime'], // Truyền approvedtime
+                      approvedName: file['approvedName'], // Truyền approvedName
+                      deployedFiles: deployedFiles, // Truyền deployedFiles
+                      deployedtime: file['deployedtime'], // Truyền deployedtime
+                      deployedName: file['deployedName'], // Truyền deployedName
+                      stampertime: file['stampertime'], // Truyền stampertime
+                      stamperName: file['stamperName'], // Truyền stamperName
+                    ),
+                  ),
+                );
+              },
             ),
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              RichText(
-                text: TextSpan(
-                  children: <TextSpan>[
-                    const TextSpan(
-                      text: 'Trạng thái: ',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.black,height: 1.5),
-                    ),
-                    TextSpan(
-                      text: _getStatusText(file['status']),
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: _getStatusColor(file['status']), // Thay đổi màu sắc dựa trên status
-                        height: 1.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              RichText(
-                text: TextSpan(
-                  children: <TextSpan>[
-                    const TextSpan(
-                      text: 'Ngày tạo: ',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.black,height: 1.5),
-                    ),
-                    TextSpan(
-                      text: file['createdtime'],
-                      style: const TextStyle(fontSize: 16,color: Colors.black,height: 1.5),
-                    ),
-                  ],
-                ),
-              ),
-              RichText(
-                text: TextSpan(
-                  children: <TextSpan>[
-                    const TextSpan(
-                      text: 'Người trình ký: ',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.black,height: 1.5),
-                    ),
-                    TextSpan(
-                      text: file['createdName'],
-                      style: const TextStyle(fontSize: 16,color: Colors.black,height: 1.5),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          trailing: Icon(
-            Icons.circle,
-            color: _getStatusColor(file['status']),
-            size: 14.0, // Adjust the size of the dot
-          ),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ProductDetailScreen(
-                  name: file['title'] ?? 'Không có tên',
-                  description: file['description'] ?? 'Không có mô tả',
-                  status: file['status'] ?? 'Chưa xác định',
-                  datetime: file['createdtime'] ?? 'Chưa xác định',
-                  originalFiles: originalFiles,
-                  nameCreated: file['createdName'] ?? 'Không có thông tin',
-                  author: widget.author,
-                  fileId: file['id'], // Truyền fileId vào đây
-                  approvedFiles: approvedFiles, // Truyền approvedFiles
-                  approvedtime: file['approvedtime'], // Truyền approvedtime
-                  approvedName: file['approvedName'], // Truyền approvedName
-                  deployedFiles: deployedFiles, // Truyền deployedFiles
-                  deployedtime: file['deployedtime'], // Truyền deployedtime
-                  deployedName: file['deployedName'], // Truyền deployedName
-                  stampertime: file['stampertime'], // Truyền deployedtime
-                  stamperName: file['stamperName'], // Truyền stamperName
-                ),
-              ),
-            );
-          },
-        );
-      },
+          );
+        },
+      ),
     );
   }
+
   Color _getStatusColor(String status) {
     switch (status) {
       case 'approved':
@@ -495,12 +504,10 @@ class _HomeScreenState extends State<HomeScreen> {
         return 'Đang chờ đóng dấu';
       case 'finished':
         return 'Hồ sơ đã hoàn thiện';
+        case 'denied':
+        return 'Hồ sơ đã bị từ chối';
       default:
         return 'Trạng thái không xác định';
     }
-  }
-
-  void _logout(BuildContext context) {
-    Navigator.pushReplacementNamed(context, '/login');
   }
 }

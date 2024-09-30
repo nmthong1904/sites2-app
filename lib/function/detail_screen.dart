@@ -61,6 +61,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         return 'Đang chờ đóng dấu';
       case 'finished':
         return 'Hồ sơ đã hoàn thiện';
+      case 'denied':
+        return 'Hồ sơ đã bị từ chối';
       default:
         return 'Trạng thái không xác định';
     }
@@ -90,7 +92,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.black,height: 1.5
+                color: Colors.green,
+                height: 1.5
               ),
             ),
           ],
@@ -105,14 +108,17 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.black,height: 1.5
+                color: Colors.black,
+                height: 1.5
               ),
             ),
             TextSpan(
               text: incompleteDetails,
               style: const TextStyle(
                 fontSize: 16,
-                color: Colors.black,height: 1.5
+                fontWeight: FontWeight.bold,
+                color: Colors.red,
+                height: 1.5
               ),
             ),
           ],
@@ -145,7 +151,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.black,height: 1.5
+                color: Colors.green,
+                height: 1.5
               ),
             ),
           ],
@@ -160,14 +167,17 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.black,height: 1.5
+                color: Colors.black,
+                height: 1.5
               ),
             ),
             TextSpan(
               text: incompleteDetails,
               style: const TextStyle(
                 fontSize: 16,
-                color: Colors.black,height: 1.5
+                fontWeight: FontWeight.bold,
+                color: Colors.red,
+                height: 1.5
               ),
             ),
           ],
@@ -188,9 +198,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             padding: const EdgeInsets.only(right: 10.0),
             child: IconButton(
               icon: const Icon(Icons.delete),
-              onPressed: () {
-                // Xử lý xóa hồ sơ
-              },
+              onPressed: _confirmDeleteFile, // Gọi hàm hiển thị hộp thoại xác nhận
             ),
           ),
         ]
@@ -242,7 +250,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       ),
                       TextSpan(
                         text: _getStatusText(widget.status),
-                        style: const TextStyle(fontSize: 16,color: Colors.black,height: 1.5),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: _getStatusColor(widget.status), // Thay đổi màu sắc dựa trên status
+                          height: 1.5,
+                        ),
                       ),
                     ],
                   ),
@@ -385,7 +398,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             ] else if (widget.status == 'approved')...[
               // Hiển thị trạng thái so sánh
               getApprovedStatus(widget.originalFiles, widget.approvedFiles),
-            ] else ...[
+            ] else if (widget.status == 'deployed' || widget.status == 'finished') ...[
               RichText(
                 text: TextSpan(
                   children: [
@@ -397,6 +410,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   ],
                 ),
               ),
+            ] else if (widget.status == 'denied') ...[
+              //Không hiển thị gì khi hồ sơ bị từ chối
             ],
             const SizedBox(height: 10),
             Center(
@@ -428,8 +443,31 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           ),
                           const SizedBox(height: 10),
                           ElevatedButton(
-                            onPressed: () {
+                            onPressed: () async {
+                              // Hiển thị màn hình xử lý
+                              showDialog(
+                                context: context,
+                                barrierDismissible: false,
+                                builder: (BuildContext context) {
+                                  return const ProcessingdialogScreen();
+                                },
+                              );
                               // Xử lý từ chối hồ sơ
+                              final deniedTime = DateFormat('HH:mm dd/MM/yyyy').format(DateTime.now());
+                              // Cập nhật vào Firebase Realtime Database
+                              await FirebaseDatabase.instance.ref().child('files').child(widget.fileId).update({
+                                'approvedtime': deniedTime,
+                                'status': 'denied',
+                              });
+                              // Cập nhật vào Firebase Realtime Database notifications
+                              await FirebaseDatabase.instance.ref().child('notifications').child(widget.fileId).update({
+                                widget.nameCreated:{
+                                  'message': 'Hồ sơ ${widget.name} của bạn đã bị từ chối bởi ${widget.approvedName} vào $deniedTime',
+                                  'isRead': false,
+                                }
+                              });
+                              await Future.delayed(const Duration(seconds: 2));
+                              Navigator.of(context).popUntil((route) => route.isFirst);
                             },
                             style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 15),
@@ -569,5 +607,69 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         );
       },
     );
+  }
+
+  void _deleteFile() async {
+    // Hiển thị hộp thoại xử lý
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const ProcessingdialogScreen(); // Có thể sử dụng một màn hình xử lý nếu có
+      },
+    );
+
+    // Xóa hồ sơ từ Firebase
+    await FirebaseDatabase.instance.ref().child('files').child(widget.fileId).remove();
+
+    // Xóa thông báo liên quan đến hồ sơ nếu có
+    await FirebaseDatabase.instance.ref().child('notifications').child(widget.fileId).remove();
+
+    // Đợi một chút để cập nhật UI
+    await Future.delayed(const Duration(seconds: 2));
+
+    // Đóng hộp thoại và quay về màn hình trước đó
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+  void _confirmDeleteFile() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Xoá hồ sơ'),
+          content: const Text('Bạn có chắc chắn muốn xóa hồ sơ này không?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Đóng hộp thoại nếu người dùng chọn "Hủy"
+              },
+              child: const Text('Hủy'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Đóng hộp thoại xác nhận
+                _deleteFile(); // Gọi hàm xóa hồ sơ
+              },
+              child: const Text('Xóa'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'approved':
+      case 'deployed':
+      case 'pending':
+        return Colors.lightBlueAccent;
+      case 'finished':
+        return Colors.green;
+      case 'denied':
+        return Colors.red;
+      default:
+        return Colors.grey; // Default color if the status is not recognized
+    }
   }
 }
