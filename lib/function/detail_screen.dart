@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:sites2app/function/processingdialog_screen.dart';
+import '../home/home_screen.dart';
 import 'approved_screen.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -9,6 +10,7 @@ import 'package:intl/intl.dart'; // Thêm thư viện intl để định dạng 
 
 class ProductDetailScreen extends StatefulWidget {
   final String name;
+  final String fullName;
   final String? description;
   final String status;
   final String datetime;
@@ -29,6 +31,7 @@ class ProductDetailScreen extends StatefulWidget {
 
   const ProductDetailScreen({
     required this.name,
+    required this.fullName,
     required this.description,
     required this.status,
     required this.datetime,
@@ -740,7 +743,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     await Future.delayed(const Duration(seconds: 2));
 
     // Đóng hộp thoại và quay về màn hình trước đó
-    Navigator.of(context).popUntil((route) => route.isFirst);
+    // Navigator.of(context).popUntil((route) => route.isFirst);
+    // Đóng hộp thoại và chuyển về màn hình chính
+    Navigator.of(context).pop(); // Đóng hộp thoại xử lý
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) =>  HomeScreen(fullName: widget.fullName, author: widget.author)), // Thay thế `HomeScreen` bằng màn hình chính của bạn
+          (Route<dynamic> route) => false,
+    );
   }
   void _confirmDeleteFile() {
     showDialog(

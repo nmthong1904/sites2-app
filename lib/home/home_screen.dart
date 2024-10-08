@@ -36,6 +36,8 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _loadFiles();
     _loadUnreadNotificationsCount(); // Thêm dòng này
+
+    //Bug khi xoá nếu scroll ẩn hiện appbar
     _scrollController.addListener(_scrollListener); // Lắng nghe sự kiện cuộn
   }
 
@@ -480,6 +482,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   MaterialPageRoute(
                     builder: (context) => ProductDetailScreen(
                       name: file['title'] ?? 'Không có tên',
+                      fullName : widget.fullName,
                       description: file['description'] ?? 'Không có mô tả/ghi chú',
                       status: file['status'] ?? 'Chưa xác định',
                       datetime: file['createdtime'] ?? 'Chưa xác định',
