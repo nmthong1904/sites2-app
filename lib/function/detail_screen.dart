@@ -60,7 +60,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       case 'pending':
         return 'Đang chờ phê duyệt';
       case 'approved':
-        return 'Đang chờ soát xét';
+        return 'Đang chờ kiểm tra';
       case 'deployed':
         return 'Đang chờ đóng dấu';
       case 'finished':
