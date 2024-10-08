@@ -371,6 +371,21 @@ class _HomeScreenState extends State<HomeScreen> {
           final approvedFiles = (file['approvedFiles'] as Map<dynamic, dynamic>?)?.cast<String, String?>() ?? {};
           final deployedFiles = (file['deployedFiles'] as Map<dynamic, dynamic>?)?.cast<String, String?>() ?? {};
 
+          // Kiểm tra và đếm số lượng bình luận
+          final String commentAdmin = file['comment_admin']??"";
+          final String commentManager = file['comment_manager']??"";
+          int commentCount = 0;
+
+          // Kiểm tra nếu `commentAdmin` khác `null` và không rỗng
+          if (commentAdmin.isNotEmpty) {
+            commentCount++;
+          }
+
+          // Kiểm tra nếu `commentManager` khác `null` và không rỗng
+          if (commentManager.isNotEmpty) {
+            commentCount++;
+          }
+
           return Card( // Thêm Card để tạo hiệu ứng bóng
             margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 16), // Thêm margin
             color: Colors.white54,
@@ -440,6 +455,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                   ),
+                  const SizedBox(height: 8),
+                  // if (commentCount > 0) // Chỉ hiển thị biểu tượng bình luận nếu có bình luận
+                    Row(
+                      children: [
+                        const Icon(Icons.comment, color: Colors.grey),
+                        const SizedBox(width: 4), // Khoảng cách giữa icon và số lượng bình luận
+                        Text(
+                          '$commentCount',
+                          style: const TextStyle(color: Colors.grey, fontSize: 14),
+                        ),
+                      ],
+                    ),
                 ],
               ),
               trailing: Icon(
@@ -453,7 +480,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   MaterialPageRoute(
                     builder: (context) => ProductDetailScreen(
                       name: file['title'] ?? 'Không có tên',
-                      description: file['description'] ?? 'Không có mô tả',
+                      description: file['description'] ?? 'Không có mô tả/ghi chú',
                       status: file['status'] ?? 'Chưa xác định',
                       datetime: file['createdtime'] ?? 'Chưa xác định',
                       originalFiles: originalFiles,
@@ -468,6 +495,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       deployedName: file['deployedName'], // Truyền deployedName
                       stampertime: file['stampertime'], // Truyền stampertime
                       stamperName: file['stamperName'], // Truyền stamperName
+                      commentAdmin: file['comment_admin'], // Truyền comment_admin
+                      commentManager: file['comment_manager'], // Truyền comment_manager
                     ),
                   ),
                 );

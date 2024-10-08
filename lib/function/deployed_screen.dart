@@ -34,6 +34,9 @@ class _DeployedScreenState extends State<DeployedScreen> {
   final Map<String, String?> errorMessages = {}; // Lưu trữ thông báo lỗi riêng cho từng ô
   String? managerErrorMessage; // Lưu trữ thông báo lỗi cho người soát xét
 
+  // Thêm TextEditingController để quản lý phần nhận xét
+  final TextEditingController _commentController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -47,6 +50,7 @@ class _DeployedScreenState extends State<DeployedScreen> {
   void dispose() {
     // Hủy các TextEditingController để tránh rò rỉ bộ nhớ
     _controllers.values.forEach((controller) => controller.dispose());
+    _commentController.dispose(); // Hủy TextEditingController cho nhận xét
     super.dispose();
   }
 
@@ -85,7 +89,7 @@ class _DeployedScreenState extends State<DeployedScreen> {
                               // Kiểm tra đầu vào và lưu trữ số lượng nếu hợp lệ
                               final parsedValue = int.tryParse(value);
                               quantities[key] = parsedValue;
-                              if (parsedValue == null || parsedValue <= 0) {
+                              if (parsedValue == null || parsedValue < 0) {
                                 errorMessages[key] = 'Số lượng biên bản kiểm tra không phù hợp';
                               } else if (parsedValue > (int.tryParse(widget.approvedFiles[key]!) ?? 0)) {
                                 errorMessages[key] = 'Số lượng biên bản kiểm tra lớn hơn số lượng được phê duyệt';
@@ -105,6 +109,17 @@ class _DeployedScreenState extends State<DeployedScreen> {
                         style: const TextStyle(color: Colors.red),
                       ),
                     ],
+                    const SizedBox(height: 10),
+                    const Text('Nhận xét', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: _commentController,
+                      decoration: const InputDecoration(
+                        labelText: 'Nhập nhận xét của bạn',
+                        border: OutlineInputBorder(),
+                      ),
+                      maxLines: 3, // Đặt số dòng tối đa cho phần nhận xét
+                    ),
                   ],
                 ),
               );
@@ -205,6 +220,7 @@ class _DeployedScreenState extends State<DeployedScreen> {
                     'deployedFiles': deployedFiles,
                     'status': 'deployed',
                     'stamperName': _selectedStamperName,
+                    'comment_manager': _commentController.text, // Thêm nhận xét
                   });
                   // Cập nhật vào Firebase Realtime Database notifications
                   await FirebaseDatabase.instance.ref().child('notifications').child(widget.fileId).update({

@@ -9,7 +9,7 @@ import 'package:intl/intl.dart'; // Thêm thư viện intl để định dạng 
 
 class ProductDetailScreen extends StatefulWidget {
   final String name;
-  final String description;
+  final String? description;
   final String status;
   final String datetime;
   final Map<String, String?> originalFiles;
@@ -24,6 +24,8 @@ class ProductDetailScreen extends StatefulWidget {
   final String? deployedName; // Thêm approvedName
   final String? stampertime; // Thêm approvedtime
   final String? stamperName; // Thêm approvedName
+  final String? commentAdmin; // Thêm approvedName
+  final String? commentManager; // Thêm approvedName
 
   const ProductDetailScreen({
     required this.name,
@@ -42,6 +44,8 @@ class ProductDetailScreen extends StatefulWidget {
     required this.deployedName, // Thêm deployedName
     required this.stampertime, // Thêm stampertime
     required this.stamperName, // Thêm deployedName
+    required this.commentAdmin, // Thêm deployedName
+    required this.commentManager, // Thêm deployedName
     Key? key,
   }) : super(key: key);
 
@@ -204,7 +208,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         ]
             : null,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -227,20 +231,22 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                RichText(
-                  text: TextSpan(
-                    children: <TextSpan>[
-                      const TextSpan(
-                        text: 'Mô tả: ',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.black,height: 1.5),
-                      ),
-                      TextSpan(
-                        text: widget.description,
-                        style: const TextStyle(fontSize: 16,color: Colors.black,height: 1.5),
-                      ),
-                    ],
+                if (widget.description != "") ...[
+                  RichText(
+                    text: TextSpan(
+                      children: <TextSpan>[
+                        const TextSpan(
+                          text: 'Mô tả/Ghi chú: ',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.black,height: 1.5),
+                        ),
+                        TextSpan(
+                          text: widget.description,
+                          style: const TextStyle(fontSize: 16,color: Colors.black,height: 1.5),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+                ],
                 RichText(
                   text: TextSpan(
                     children: <TextSpan>[
@@ -390,6 +396,39 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ],
             ),
             const SizedBox(height: 8), // Khoảng cách
+            if (widget.commentAdmin != null) ...[
+              RichText(
+                text: TextSpan(
+                  children: <TextSpan>[
+                    const TextSpan(
+                      text: 'Nhận xét của Ban Giám Đốc: ',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.black,height: 1.5),
+                    ),
+                    TextSpan(
+                      text: widget.commentAdmin,
+                      style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold,color: Colors.yellow[800],height: 1.5),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            if (widget.commentManager != null) ...[
+              RichText(
+                text: TextSpan(
+                  children: <TextSpan>[
+                    const TextSpan(
+                      text: 'Nhận xét của Bộ Phận Kiểm Tra Hồ Sơ: ',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.black,height: 1.5),
+                    ),
+                    TextSpan(
+                      text: widget.commentManager,
+                      style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold,color: Colors.yellow[800],height: 1.5),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            const SizedBox(height: 8), // Khoảng cách
             if (widget.status == 'pending') ...[
               Text('Biên bản gốc bao gồm', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ...widget.originalFiles.entries.map((entry) {
@@ -444,30 +483,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           const SizedBox(height: 10),
                           ElevatedButton(
                             onPressed: () async {
-                              // Hiển thị màn hình xử lý
-                              showDialog(
-                                context: context,
-                                barrierDismissible: false,
-                                builder: (BuildContext context) {
-                                  return const ProcessingdialogScreen();
-                                },
-                              );
-                              // Xử lý từ chối hồ sơ
-                              final deniedTime = DateFormat('HH:mm dd/MM/yyyy').format(DateTime.now());
-                              // Cập nhật vào Firebase Realtime Database
-                              await FirebaseDatabase.instance.ref().child('files').child(widget.fileId).update({
-                                'approvedtime': deniedTime,
-                                'status': 'denied',
-                              });
-                              // Cập nhật vào Firebase Realtime Database notifications
-                              await FirebaseDatabase.instance.ref().child('notifications').child(widget.fileId).update({
-                                widget.nameCreated:{
-                                  'message': 'Hồ sơ ${widget.name} của bạn đã bị từ chối bởi ${widget.approvedName} vào $deniedTime',
-                                  'isRead': false,
-                                }
-                              });
-                              await Future.delayed(const Duration(seconds: 2));
-                              Navigator.of(context).popUntil((route) => route.isFirst);
+                              _showDenialReasonDialog(context); // Gọi hàm hiển thị dialog nhập lý do từ chối
                             },
                             style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 15),
@@ -548,6 +564,101 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       ),
     );
   }
+
+  void _showDenialReasonDialog(BuildContext context) {
+    String commentDenied = ''; // Biến để lưu lý do từ chối
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.75, // Chiếm 3/4 chiều ngang
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Nhập lý do từ chối',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  onChanged: (value) {
+                    commentDenied = value; // Cập nhật lý do khi người dùng nhập
+                  },
+                  decoration: const InputDecoration(
+                    hintText: 'Nhập lý do...',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 3, // Có thể nhập nhiều dòng
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton(
+                      child: const Text('Hủy'),
+                      onPressed: () {
+                        Navigator.of(context).pop(); // Đóng dialog
+                      },
+                    ),
+                    TextButton(
+                      child: const Text('Xác nhận'),
+                      onPressed: () {
+                        // Nếu lý do từ chối không rỗng, tiến hành xử lý
+                        if (commentDenied.isNotEmpty) {
+                          // Hiển thị màn hình xử lý
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (BuildContext context) {
+                              return const ProcessingdialogScreen();
+                            },
+                          );
+
+                          // Xử lý từ chối hồ sơ
+                          final deniedTime = DateFormat('HH:mm dd/MM/yyyy').format(DateTime.now());
+
+                          // Cập nhật vào Firebase Realtime Database
+                          FirebaseDatabase.instance.ref().child('files').child(widget.fileId).update({
+                            'approvedtime': deniedTime,
+                            'status': 'denied',
+                            'comment_admin': commentDenied, // Thêm lý do từ chối vào đây
+                          });
+
+                          // Cập nhật vào Firebase Realtime Database notifications
+                          FirebaseDatabase.instance.ref().child('notifications').child(widget.fileId).update({
+                            widget.nameCreated: {
+                              'message': 'Hồ sơ ${widget.name} của bạn đã bị từ chối bởi ${widget.approvedName} vào $deniedTime. Lý do: $commentDenied',
+                              'isRead': false,
+                            }
+                          });
+
+                          Future.delayed(const Duration(seconds: 2), () {
+                            Navigator.of(context).popUntil((route) => route.isFirst); // Đóng tất cả dialog
+                          });
+                        } else {
+                          // Hiển thị thông báo nếu lý do không được nhập
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Vui lòng nhập lý do từ chối.')),
+                          );
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   void _navigateToApproveScreen(BuildContext context) {
     showModalBottomSheet(
       context: context,

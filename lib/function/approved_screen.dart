@@ -34,6 +34,9 @@ class _ApproveScreenState extends State<ApproveScreen> {
   final Map<String, String?> errorMessages = {}; // Lưu trữ thông báo lỗi riêng cho từng ô
   String? managerErrorMessage; // Lưu trữ thông báo lỗi cho người soát xét
 
+  // Thêm TextEditingController để quản lý phần nhận xét
+  final TextEditingController _commentController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -47,6 +50,7 @@ class _ApproveScreenState extends State<ApproveScreen> {
   void dispose() {
     // Hủy các TextEditingController để tránh rò rỉ bộ nhớ
     _controllers.values.forEach((controller) => controller.dispose());
+    _commentController.dispose(); // Hủy TextEditingController cho nhận xét
     super.dispose();
   }
 
@@ -82,15 +86,14 @@ class _ApproveScreenState extends State<ApproveScreen> {
                             ),
                             keyboardType: TextInputType.number,
                             onChanged: (value) {
-                              // Kiểm tra đầu vào và lưu trữ số lượng nếu hợp lệ
                               final parsedValue = int.tryParse(value);
                               quantities[key] = parsedValue;
-                              if (parsedValue == null || parsedValue <= 0) {
+                              if (parsedValue == null || parsedValue < 0) {
                                 errorMessages[key] = 'Số lượng biên bản duyệt không phù hợp';
                               } else if (parsedValue > (int.tryParse(widget.originalFiles[key]!) ?? 0)) {
                                 errorMessages[key] = 'Số lượng biên bản duyệt lớn hơn số lượng gốc';
                               } else {
-                                errorMessages.remove(key); // Xóa thông báo lỗi nếu hợp lệ
+                                errorMessages.remove(key);
                               }
                               setState(() {}); // Cập nhật giao diện
                             },
@@ -139,10 +142,10 @@ class _ApproveScreenState extends State<ApproveScreen> {
                         setState(() {
                           _selectedManagerName = managerName;
                           _selectedManager = value;
-                          managerErrorMessage = null; // Xóa thông báo lỗi khi người dùng chọn người soát xét
+                          managerErrorMessage = null;
                         });
                       },
-                      activeColor: Colors.blue, // Đổi màu của radio button khi được chọn
+                      activeColor: Colors.blue,
                     );
                   }).toList(),
                 );
@@ -155,6 +158,17 @@ class _ApproveScreenState extends State<ApproveScreen> {
                 style: const TextStyle(color: Colors.red),
               ),
             ],
+            const SizedBox(height: 10),
+            const Text('Nhận xét', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _commentController,
+              decoration: const InputDecoration(
+                labelText: 'Nhập nhận xét của bạn',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 3, // Đặt số dòng tối đa cho phần nhận xét
+            ),
             const SizedBox(height: 10),
             Center(
               child: ElevatedButton(
@@ -205,6 +219,7 @@ class _ApproveScreenState extends State<ApproveScreen> {
                     'approvedFiles': approvedFiles,
                     'status': 'approved',
                     'deployedName': _selectedManagerName,
+                    'comment_admin': _commentController.text, // Thêm nhận xét
                   });
                   // Cập nhật vào Firebase Realtime Database notifications
                   await FirebaseDatabase.instance.ref().child('notifications').child(widget.fileId).update({

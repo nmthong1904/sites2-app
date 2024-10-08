@@ -19,19 +19,23 @@ class AddNewFileScreen extends StatefulWidget {
 class _AddNewFileScreenState extends State<AddNewFileScreen> {
   final List<String> _checkboxLabels = [
     'Biên bản Nồi Hơi',
+    'Biên bản TBN',
     'Biên bản TBAL',
     'Biên bản Hệ Thống Lạnh',
     'Biên bản TBĐ',
+    'Biên bản TBĐ-Phòng nổ',
+    'Biên bản Chai',
     'Biên bản Áp Kế',
     'Biên bản Van An Toàn',
     'Biên bản NDT',
     'Biên bản Huấn Luyện',
     'Biên bản Môi Trường',
-    'Biên bản khác',
+    'Báo giá hợp đồng',
+    'Khác',
   ];
 
-  final List<bool> _isCheckboxChecked = List.generate(10, (index) => false);
-  final List<TextEditingController> _textControllers = List.generate(10, (index) => TextEditingController());
+  final List<bool> _isCheckboxChecked = List.generate(14, (index) => false);
+  final List<TextEditingController> _textControllers = List.generate(14, (index) => TextEditingController());
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -85,7 +89,7 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
               TextField(
                 controller: _descriptionController,
                 decoration: InputDecoration(
-                  labelText: 'Mô tả',
+                  labelText: 'Mô tả/Ghi chú',
                   labelStyle: const TextStyle(color: Colors.blue),
                   filled: true,
                   fillColor: Colors.transparent,
@@ -115,7 +119,7 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
                   style: const TextStyle(color: Colors.blue),
                 ),
               ),
-              ...List.generate(10, (index) {
+              ...List.generate(14, (index) {
                 return Row(
                   children: [
                     Checkbox(
@@ -268,12 +272,12 @@ class _AddNewFileScreenState extends State<AddNewFileScreen> {
       return;
     }
 
-    if (_descriptionController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng nhập mô tả')),
-      );
-      return;
-    }
+    // if (_descriptionController.text.isEmpty) {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     const SnackBar(content: Text('Vui lòng nhập mô tả')),
+    //   );
+    //   return;
+    // }
 
     if (_selectedAdmin == null) {
       ScaffoldMessenger.of(context).showSnackBar(

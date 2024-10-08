@@ -69,7 +69,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           final notification = _notifications[index];
           final notificationKey = _notificationKeys[index]; // Get the key for this notification
           return ListTile(
-            subtitle: Text(notification['message'] ?? 'Nội dung không có'),
+            subtitle: Text(notification['message'] ?? 'Nội dung không có',style: const TextStyle(fontSize: 16, height: 1.5)),
             onTap: () {
               // Cập nhật trạng thái thông báo khi người dùng xem
               if (notification['isRead'] == false) {
