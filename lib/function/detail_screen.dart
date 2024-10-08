@@ -396,7 +396,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ],
             ),
             const SizedBox(height: 8), // Khoảng cách
-            if (widget.commentAdmin != null) ...[
+            if (widget.commentAdmin != "" && widget.commentAdmin != null ) ...[
               RichText(
                 text: TextSpan(
                   children: <TextSpan>[
@@ -412,7 +412,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 ),
               ),
             ],
-            if (widget.commentManager != null) ...[
+            if (widget.commentManager != "" && widget.commentManager != null ) ...[
               RichText(
                 text: TextSpan(
                   children: <TextSpan>[
