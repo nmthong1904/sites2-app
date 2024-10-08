@@ -110,20 +110,20 @@ class _DeployedScreenState extends State<DeployedScreen> {
                       ),
                     ],
                     const SizedBox(height: 10),
-                    const Text('Nhận xét', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: _commentController,
-                      decoration: const InputDecoration(
-                        labelText: 'Nhập nhận xét của bạn',
-                        border: OutlineInputBorder(),
-                      ),
-                      maxLines: 3, // Đặt số dòng tối đa cho phần nhận xét
-                    ),
                   ],
                 ),
               );
             }).toList(),
+            const Text('Nhận xét', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _commentController,
+              decoration: const InputDecoration(
+                labelText: 'Nhập nhận xét của bạn',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 3, // Đặt số dòng tối đa cho phần nhận xét
+            ),
             const SizedBox(height: 10),
             const Text('Chọn người đóng dấu hồ sơ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
